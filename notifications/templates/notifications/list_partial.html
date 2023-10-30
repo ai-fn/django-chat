@@ -1,0 +1,25 @@
+{% load i18n %}
+
+{% if notifications %}
+    {% for notif in notifications %}
+
+        <a class="room-container" href="{% url 'notifications:view' notif.id %}">
+            <div class="card text-bg-dark border-light bg-color-dark">
+                <div class="cart-title">
+                    <span>{{notif.title}}</span>
+                </div>
+                <div class="card-body">
+                    <span>{{ notif.message }}</span>    
+                </div>
+                <div class="card-footer border-light">
+                    <span>{{ notif.timestamp }}</span>
+                    {% if notif.title == "Friend Request" %}
+                        <a href="{% url 'friend_requests:list' %}" class="btn btn-outline-success me-2">{% translate "Go to friend requests" %}</a>
+                    {% endif %}
+                </div>
+            </div>
+        </a>
+    {% endfor %}
+{% else %}
+    <div class="alert alert-default text-center">{% translate "No notifications." %}</div>
+{% endif %}

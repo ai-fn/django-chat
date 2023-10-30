@@ -1,0 +1,21 @@
+<div class="room-header" style="color: white;">
+    <div class="header-body">
+        {% if room.type == 'chat' and room.name != 'Favorites' %}
+            <a data-bs-toggle="modal" data-bs-target="#chatInfo">
+                <div class="avatar smaller" style="background-image: url({{ room.image}});"></div>
+            </a>
+            <div class="room-name">
+                <a data-bs-toggle="modal" data-bs-target="#chatInfo"><span>{{ room.name }}</span></a>
+                <div>{{ room.members|length }} members</div>
+            </div>
+        {% elif room.name == 'Favorites' %}
+            <div class="avatar smaller" style="background-image: url({{ room.image}});"></div>
+            <div class="room-name">
+                <span>{{ room.name }}</span>
+            </div>
+        {% else %}
+            <a href="{% url 'profile' user_to.user_id %}"><div class="avatar smaller" style="background-image: url({{ room.image}});"></div></a>
+            <div class="room-name"><a href="{% url 'profile' user_to.user_id %}"><span>{{ room.name }}</span></a></div>
+        {% endif %}
+    </div>
+</div>    

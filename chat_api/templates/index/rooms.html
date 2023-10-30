@@ -1,0 +1,99 @@
+{% extends 'index/base.html' %}
+{% load chat_api_tags %}
+{% load static %}
+
+
+{% block header %}
+    {% include 'index/header.html' %}
+{% endblock %}
+
+
+{% block modal %}
+<!-- Modal for create room -->
+<div class="modal fade" id="createRoomModal" data-bs-theme="dark" tabindex="-1" aria-labelledby="ModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+        <div class="modal-header">
+            <h1 class="modal-title fs-5 text-bg-dark" id="ModalLabel">Create room</h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <form class="create-room-form" method="post" action="{% url 'create-chat' %}">
+                {% csrf_token %}
+                <input class="form-control text-bg-dark" style="margin-bottom: 10px;" placeholder="room name" type="text" name="room-name" id="room-name-inp" required>
+                <input class="form-control" accept=".png, .jpeg, .jpg" type="file" name="room-image" id="room-image-inp">
+                <button style="margin: 10px 1.5rem;" type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button style="margin: 0px 1.5rem;" type="submit" class="btn btn-success">Create room</button>
+            </form>
+        </div>
+        
+        </div>
+    </div>
+</div>
+
+<!-- Modal for add folder -->
+<div class="modal fade" id="addFolderModal" data-bs-theme="dark" tabindex="-1" aria-labelledby="ModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5 text-bg-dark" id="ModalLabel">Add folder</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form class="add-folder-form" method="post" action="{% url 'create-folder' %}">
+                    {% csrf_token %}
+                    <input class="form-control text-bg-dark" style="margin-bottom: 10px;" placeholder="folder name" type="text" name="folder-name" id="folder" required>
+                    <button style="margin: 10px 1.5rem;" type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button style="margin: 0px 1.5rem;" class="btn btn-success" type="submit">Add</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for new direct -->
+<div class="modal fade" id="newDirectModal" data-bs-theme="dark" tabindex="-1" aria-labelledby="newDirectModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5 text-bg-dark" id="ModalLabel">New direct</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                {% include 'index/users_list.html' with users=friends %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="main-container">
+    <div class="folders d-flex">
+        {% include 'index/folders.html' with folders=folders %}
+        <div class="create-room">
+            <span id="create-room-sp">No rooms yet?</span>
+            <a class="create-room-btn" type="button" data-bs-toggle="modal" data-bs-target="#createRoomModal" title="Create room">Create room</a>
+            <a data-bs-toggle="modal" title="New message" data-bs-target="#newDirectModal"><img src="{% static 'new_direct.png' %}" alt=""></a>
+        </div>
+    </div>
+
+
+    <div class="tab-content" id="pills-tabContent">
+        {% for folder in folders %}
+            {% with name=folder.name %}
+            {% if forloop.counter == 1 %}
+                <div class="tab-pane fade show active" id="pills-{{ name|join:'' }}" role="tabpanel" aria-labelledby="pills-{{ name|join:'' }}-tab" tabindex="0">
+                    {% include "index/folders_partial.html" with folder=folder folders=folders %}
+                </div>
+            {% else %}
+                <div class="tab-pane fade" id="pills-{{ name|join:'' }}" role="tabpanel" aria-labelledby="pills-{{ name|join:'' }}-tab" tabindex="0">
+                    {% include "index/folders_partial.html" with folder=folder folders=folders %}
+                </div>
+            {% endif %}
+            {% endwith %}
+        {% endfor %}
+    </div> 
+</div>
+    
+{% endblock %}

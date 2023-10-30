@@ -1,0 +1,16 @@
+.idea
+*.log
+*.imi
+*.xml
+venv
+local_settings.py
+__pycache__/
+*/__pycache__/
+*.py[cod]
+.pyc
+.env
+.env.docker
+db.sqlite3
+rest_framework
+staticfiles/js
+admin

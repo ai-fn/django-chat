@@ -1,0 +1,51 @@
+{% extends 'index/base.html' %}
+
+{% block errors %}
+    {% include 'index/form_errors.html' with form=form %}
+{% endblock %}
+
+{% block content %}
+<form class="form" class="form" action="{% url 'register' %}" method="POST">
+    {% csrf_token %}
+    <img class="logo" src="https://cdn.you.com/img/shared/logos/ydc-logo.svg">
+    <h2>Sign up</h2>
+    {{ form }}
+    <input class="inp" type="submit" value="continue" name="submit-btn" id="submit-btn">
+    <span id="reg-lbl">Have account already?<a id="reg-a" href="{% url 'login' %}">Login</a></span>
+</form>
+{% endblock %}
+{% block scripts %}
+<script>
+    let el = document.getElementsByClassName('cont')[0]
+    el.style.backgroundColor = 'transparent'
+    el.style.border = 'none'
+        function register() {
+            let form = document.getElementById("form")
+
+            if (form.password.value != form.cnfrmPassword.value){
+                alert('Passwords may be same!')
+                return;
+            }
+
+            $.post( {
+            url: '',
+            data: {
+                'First_Name': form.first-name.value,
+                'Second_Name': form.second-name.value,
+                'Patronymic': form.patronymic.value,
+                'username': form.username.value,
+                'password': form.password.value,
+                'date_of_birth': form.date_of_birth.value,
+                'email': form.email.value,
+            },
+            xhrFields: {
+                withCredentials: true
+            },
+            success: () => {
+                alert('Successfully registered!')
+                window.location.href='http://127.0.0.1:8000/login/'
+            }
+            })
+        }
+</script>
+    {% endblock %}

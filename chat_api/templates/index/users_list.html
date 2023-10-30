@@ -1,0 +1,33 @@
+{% if users %}
+    {% for usr in users %}
+    <div class="user-container">
+        <div class="user">
+            <a href="{% url 'profile' usr.user_id %}">
+                <div class="avatar small" style="background-image: url({{ usr.Avatar }});"></div>
+            </a>
+            <a href="{% url 'profile' usr.user_id %}" class="user-main-block">
+                <div class="user-main-block">
+                    {{ usr.username }}
+                </div>
+            </a>
+            <div class="user-actions">
+                {% if usr in friends %}
+                    <form action="{% url 'direct' %}" method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="user_id" id="user_id" value="{{ usr.user_id }}">
+                        <button class="btn btn-success" style="height: 3rem; width: 100%;">Send message</button>
+                    </form>
+                {% elif usr.user_id in request_sent_for %}
+                    <span class="btn btn-success">Request sent</span>
+                {% else %}
+                    <a href="{% url 'friend_requests:send' usr.user_id %}" class="btn btn-secondary">
+                        <span>Add friend</span>
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+{% else %}
+    <div class="Not found results, let`s try again later"></div>
+{% endif %}

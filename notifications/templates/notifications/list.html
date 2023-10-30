@@ -1,0 +1,28 @@
+{% extends 'index/base.html' %}
+{% load i18n %}
+
+{% block title %}{% translate "Notifications list" %}{% endblock %}
+
+{% block header %}
+{% include 'index/header.html' %}
+{% endblock %}
+
+{% block content %}
+<h1 class="page-header text-center">{% translate "Notifications" %}</h1>
+<div class="d-flex align-items-start">
+    <div class="nav flex-column nav-pills me-3" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+        <button class="nav-link active" id="v-pills-unread-tab" data-bs-toggle="pill" data-bs-target="#v-pills-unread" type="button" role="tab" aria-controls="v-pills-unread" aria-selected="true">Unread</button>
+        <button class="nav-link" id="v-pills-read-tab" data-bs-toggle="pill" data-bs-target="#v-pills-read" type="button" role="tab" aria-controls="v-pills-Read" aria-selected="false">Read</button>
+        <a class="nav-link btn btn-success" style="color: white;" href="{% url 'notifications:mark_all_read' %}" type="button" role="tab">Mark all as read</a>
+        <a class="nav-link btn btn-danger" style="color: white;" href="{% url 'notifications:delete_all_read' %}" type="button" role="tab">Delete all read</a>
+    </div>
+    <div class="tab-content" id="v-pills-tabContent">
+        <div class="tab-pane fade show active" id="v-pills-unread" role="tabpanel" aria-labelledby="v-pills-unread-tab" tabindex="0">
+        {% include "notifications/list_partial.html" with notifications=unread %}
+        </div>
+        <div class="tab-pane fade" id="v-pills-read" role="tabpanel" aria-labelledby="v-pills-read-tab" tabindex="0">
+        {% include "notifications/list_partial.html" with notifications=read %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends 'index/base.html' %}
+{% load i18n %}
+
+{% block title %}{% translate "Requests list" %}{% endblock %}
+
+{% block header %}
+{% include 'index/header.html' %}
+{% endblock %}
+
+{% block content %}
+    <h1 class="page-header text-center">{% translate "Friend requests" %}</h1>
+    <div class="d-flex align-items-start">
+        <div class="nav flex-column nav-pills me-3" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+          <button class="nav-link" id="v-pills-accepted-tab" data-bs-toggle="pill" data-bs-target="#v-pills-accepted" type="button" role="tab" aria-controls="v-pills-accepted" aria-selected="true">Accepted</button>
+          <button class="nav-link" id="v-pills-declined-tab" data-bs-toggle="pill" data-bs-target="#v-pills-declined" type="button" role="tab" aria-controls="v-pills-declined" aria-selected="false">Declined</button>
+          <button class="nav-link active" id="v-pills-sent-tab" data-bs-toggle="pill" data-bs-target="#v-pills-sent" type="button" role="tab" aria-controls="v-pills-sent" aria-selected="false">Sent</button>
+        </div>
+        <div class="tab-content" id="v-pills-tabContent">
+          <div class="tab-pane fade" id="v-pills-accepted" role="tabpanel" aria-labelledby="v-pills-accepted-tab" tabindex="0">
+            {% include "friend_requests/list_partial.html" with friend_requests=accepted %}
+          </div>
+          <div class="tab-pane fade" id="v-pills-declined" role="tabpanel" aria-labelledby="v-pills-declined-tab" tabindex="0">
+            {% include "friend_requests/list_partial.html" with friend_requests=declined %}
+          </div>
+          <div class="tab-pane fade show active" id="v-pills-sent" role="tabpanel" aria-labelledby="v-pills-sent-tab" tabindex="0">
+            {% include "friend_requests/list_partial.html" with friend_requests=sent %}
+          </div>
+        </div>
+      </div>
+{% endblock %}

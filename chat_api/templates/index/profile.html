@@ -1,0 +1,100 @@
+{% extends 'index/base.html' %}
+
+{% block header %}
+{% include 'index/header.html' %}
+{% endblock %}
+
+{% block modal %}
+<!-- Modal for confirm action -->
+
+<div class="modal" data-bs-theme="dark" tabindex="-1" id="confirmActionModal">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title text-bg-dark">Confirm Action</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body text-bg-dark">
+        <p>Are you sure you want to remove {{ user_profile.First_Name }} from friends?</p>
+      </div>
+      <div class="modal-footer d-flex justify-content-center">
+        <form action="{% url 'remove-friend' %}" method="post">
+          <input type="hidden" name="user_id" id="user_id" value="{{ user_profile.user_id }}">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="margin: 5px 0px;">Cancel</button>
+          <button class="btn btn-danger" type="submit">Remove</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+
+{% block content %}
+
+<form class="form-1" enctype="multipart/form-data" method="post" action="{% url 'upd-prof-img' %}">
+    {% csrf_token %}
+    <div id="avatarImage" style="background-image: url({{ user_profile.Avatar }})"></div>
+      {% if not form.disabled %}
+        {{ upd_prof_img.as_p }}
+        <button type="submit" class="inp btn btn-secondary">Sumbit</button>
+    {% endif %}
+</form>
+    
+
+<form class="form-1" action="{% url 'profile' user.user_id %}" method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    {% if not form.disabled %}
+    <button type="submit" class="inp btn btn-secondary">Sumbit</button>
+    {% endif %}
+</form>
+
+<div style="margin-top: 30px;">
+  <div class="head text-center d-flex ">
+    <h5 class="text-bg-dark text-center">Friends list <span class="small-text">{{ friends|length }}</span></h5>
+    {% if not form.disabled %}
+      <a href="{% url 'friend_requests:list' %}">Requests <span class="small-text">{{ requests|length }}</span></a>
+    {% endif %}
+  </div>
+  <div class="friends">
+    <div class="scroll-friends d-flex">
+      {% for user in friends %}
+      <a href="{% url 'profile' user.user_id %}">
+        <div class="bg-transparent card text-bg-dark d-flex justify-content-center align-items-center" style="padding: 10px 0;">
+          <div class="avatar small" style="background-image: url({{ user.Avatar }});"></div>
+          <div class="catd-footer">{{ user.First_Name }}</div>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+{% if user_profile.user_id in user.Friends %}
+<div class="remove-from-friends d-flex justify-content-center">
+  <button type="button" data-bs-toggle="modal" data-bs-target="#confirmActionModal" style="color: gray; border: #6666 1px solid; width: 40%;" class="nav-link btn btn-danger" data>Remove friend</button>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+  try{
+    document.getElementById('imageInput').addEventListener('change', function(event) {
+
+    const file = event.target.files[0];
+    const reader = new FileReader();
+  
+    reader.onload = function(e) {
+      document.getElementById('avatarImage').style.backgroundImage = `url(${e.target.result})`;
+    }
+  
+    reader.readAsDataURL(file);
+  });
+} catch {console.log("error")}
+
+</script>
+{% endblock %}
+  

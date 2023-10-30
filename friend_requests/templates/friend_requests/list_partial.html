@@ -1,0 +1,26 @@
+{% load i18n %}
+
+{% if friend_requests %}
+    <div class="table-responsive">
+        {% for req in friend_requests %}
+            <div class="card text-bg-dark border-light bg-color-dark">
+                <div class="cart-title">
+                    <span>Status: {{req.status}}</span>
+                </div>
+                <div class="card-body d-flex align-items-center">
+                    <span>Запрос от {{ req.user_from.First_Name }} {{ req.user_from.Second_Name }}</span>
+                    <div class="avatar small" style="background-image: url({{ req.user_from.Avatar }});"></div>    
+                </div>
+                <div class="card-footer border-light">
+                    <span>{{ req.timestamp }}</span>
+                    {% if req.status == "sent" %}
+                        <a href="{% url 'friend_requests:set_as_accepted' req.id %}" class="btn btn-outline-success me-2">{% translate "Accept" %}</a>
+                        <a href="{% url 'friend_requests:set_as_declined' req.id %}" class="btn btn-outline-danger me-2">{% translate "Decline" %}</a>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="alert alert-default text-center">{% translate "No requests." %}</div>
+{% endif %}

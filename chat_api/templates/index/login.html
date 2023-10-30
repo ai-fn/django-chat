@@ -1,0 +1,23 @@
+{% extends 'index/base.html' %}
+
+{% block errors %}
+    {% include 'index/form_errors.html' with form=form %}
+{% endblock %}
+
+{% block content %}
+<form class="form" id="login-form" action="{% url 'login' %}" method="POST">
+    {% csrf_token %}
+    <img class="logo" src="https://cdn.you.com/img/shared/logos/ydc-logo.svg">
+    <h2>Log in</h2>
+    {{ form }}
+    <input class="inp" type="submit" value="Continue" name="submit-btn" id="submit-btn">
+    <span id="reg-lbl">No account yet?<a id="reg-a" href="{% url 'register' %}">Create</a></span>
+</form>
+{% endblock %}
+{% block scripts %}
+<script>
+    let el = document.getElementsByClassName('cont')[0]
+    el.style.backgroundColor = 'transparent'
+    el.style.border = 'none'
+</script>
+{% endblock %}
