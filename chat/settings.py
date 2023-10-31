@@ -215,6 +215,6 @@ CELERY_RESULT_BACKEND = os.environ.get("CELERY_RESULT_BACKEND")
 CELERY_BEAT_SCHEDULE = {
     'send_notif': {
         'task': 'chat_api.tasks.example_task',
-        'schedule': 10  # * 60,
+        'schedule': 600  # * 60,
     },
 }

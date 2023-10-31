@@ -1,4 +1,5 @@
 {% extends 'index/base.html' %}
+{% load static %}
 
 {% block errors %}
     {% include 'index/form_errors.html' with form=form %}
@@ -15,9 +16,5 @@
 </form>
 {% endblock %}
 {% block scripts %}
-<script>
-    let el = document.getElementsByClassName('cont')[0]
-    el.style.backgroundColor = 'transparent'
-    el.style.border = 'none'
-</script>
+<script src="{% static 'js/login.js' %}"></script>
 {% endblock %}
