@@ -9,12 +9,14 @@ ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
-# Copy the source code into the container.
-COPY . /app/
-
 RUN apt-get update && apt-get clean
 
+COPY req.txt /app/
+
 RUN pip install -r req.txt
+
+# Copy the source code into the container.
+COPY . /app/
 
 # Run the application.
 CMD python manage.py makemigrations \
