@@ -448,3 +448,8 @@ span {
 .alert-dismissible .btn-close {
     padding: 1rem;
 }
+.alerts {
+    margin-top: 6rem;
+    max-height: 5rem;
+    overflow: scroll;
+}
