@@ -1,4 +1,4 @@
-import os
+import json
 
 from django.conf import settings
 from django.contrib import messages
@@ -107,9 +107,15 @@ class RegisterView(APIView):
             _send_verify_email(request, _generate_unique_code(request, user), user)
             logger.info("Email with confirm code have been sent to user %s" % user)
         else:
-            for message in form.error_messages:
-                messages.warning(request, form.error_messages[message])
-                logger.info("Got an invalid register form: %s" % str(form.error_messages[message]))
+            errors_json = form.errors.as_json()
+
+            errors_dict = json.loads(errors_json)
+
+            for field, errors in errors_dict.items():
+                for error in errors:
+                    message = error['message']
+                    messages.warning(request, message)
+                    logger.info("Got an invalid register form: %s" % message)
             return redirect('register')
         return redirect('login')
 
@@ -140,8 +146,10 @@ class EmailVerifyView(APIView):
             login(request, user)
             user.is_email_confirmed = True
             user.save()
+            messages.success(request, 'User %s email successfully verified' % request.user)
             logger.info('User %s email successfully verified' % request.user)
         else:
+            messages.warning(request, "User %s now found" % request.user)
             logger.info("User %s now found" % request.user)
         return redirect('login')
 
@@ -454,7 +462,6 @@ def _send_verify_email(
     else:
         messages.error(request, 'Message sent failed')
         logger.warning('Message sent failed')
-    print(res)
     return render(request, 'index/login.html')
 
 
