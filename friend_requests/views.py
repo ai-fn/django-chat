@@ -61,8 +61,13 @@ def send_request(request, to_user_pk):
 
     logger.debug("User %s sent friend request to user with pk %s", request.user, to_user_pk)
 
-    sent_req(user_from=request.user.pk, user_to=to_user_pk)
-    messages.success(request, "Friend request sent")
+    try:
+        sent_req(user_from=request.user.pk, user_to=to_user_pk)
+    except ValueError as e:
+        logger.error(e.args[0])
+        messages.warning(request, _(e.args[0]))
+        return redirect('users')
+    messages.success(request, _("Friend request sent"))
     return redirect('users')
 
 
