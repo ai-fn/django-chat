@@ -55,11 +55,8 @@ class RoomSerialize(serializers.ModelSerializer):
     def get_image(self, obj: Room) -> str:
         req = self.context.get('request')
         if req:
-            if obj.type == 'direct':
-                try:
-                    res = settings.MEDIA_URL + str(obj.members.filter(~Q(pk=req.user.pk))[0].Avatar)
-                except IndexError:
-                    res = base_user_img
+            if obj.type == 'direct' and obj.name != 'Favorites':
+                res = settings.MEDIA_URL + str(obj.members.filter(~Q(pk=req.user.pk))[0].Avatar)
                 return res
         return settings.MEDIA_URL + str(obj.image)
 
