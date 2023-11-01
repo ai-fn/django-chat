@@ -21,8 +21,6 @@ from .forms import *
 from notifications.models import Notification
 from friend_requests.models import FriendRequest
 
-# Create your views here.
-
 logger = logging.getLogger(__name__)
 
 
@@ -99,7 +97,7 @@ class RegisterView(APIView):
                 email=email,
                 password=password,
             )
-            favorite_room = Room.objects.create(name='Favorites', image='favorites.png')
+            favorite_room = Room.objects.create(name='Favorites')
             favorite_room.members.add(user)
             Folder.objects.create(name='All', user=user).rooms.add(favorite_room)
             Folder.objects.create(name='Directs', user=user).rooms.add(favorite_room)
@@ -205,8 +203,6 @@ class ChatView(APIView):
             'members': users,
             'unread': Notification.objects.filter(user=user, viewed=0)
         }
-        if room.type == Room.Type.DIRECT:
-            context['user_to'] = UserSerialize(room.members.filter(~Q(pk=user.pk))[0]).data
         return render(request, 'chat/index.html', context=context)
 
 
