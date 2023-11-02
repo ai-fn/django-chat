@@ -165,7 +165,7 @@ CHANNEL_LAYERS = {
 
 # media settings
 MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, MEDIA_URL)
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 # static settings
 STATIC_URL = '/static/'
