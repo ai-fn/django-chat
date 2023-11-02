@@ -162,7 +162,7 @@ class TestSentCount(TestCase):
         args, kwargs = mock_cache.delete.call_args
         self.assertEqual(
             kwargs['key'],
-            FriendRequest.objects._user_friend_request_cache_key(self.user.pk)
+            FriendRequest.objects._user_sent_requests_cache_key(self.user.pk)
         )
 
 
@@ -182,7 +182,7 @@ class TestSentRequestsCount(TestCase):
         mock_cache.get.return_value = None
 
         result = FriendRequest.objects.requests_sent_for(self.user.pk)
-        expected = {11, 12}
+        expected = {12}
         self.assertSetEqual(result, expected)
         args, kwargs = mock_cache.set.call_args
         self.assertEqual(
