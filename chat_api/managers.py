@@ -14,7 +14,7 @@ class CustomUserManager(BaseUserManager):
         """
 
         if not email:
-            raise ValueError("The email field must be set")
+            raise ValueError("The email field is required")
 
         if username is None:
             username = email
@@ -33,7 +33,7 @@ class CustomUserManager(BaseUserManager):
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
         user = self.create_user(email, username, password, **extra_fields)
-        logger.debug("%s superuser has been created" % user)
+        logger.debug("%s superuser created" % user)
         return user
 
 
@@ -45,7 +45,7 @@ class RoomManager(models.Manager):
     def create(self, **kwargs):
         obj = self.model(**kwargs)
         obj.save()
-        logger.debug("Room %s have been created" % obj)
+        logger.debug("Room %s created" % obj)
         return obj
 
 
@@ -54,7 +54,7 @@ class FolderManager(models.Manager):
     def create(self, **kwargs):
         obj = self.model(**kwargs)
         obj.save()
-        logger.debug("Folder %s have been created" % obj)
+        logger.debug("Folder %s created" % obj)
         return obj
 
 
@@ -66,5 +66,14 @@ class MessageManager(models.Manager):
     def create(self, **kwargs):
         obj = self.model(**kwargs)
         obj.save()
-        logger.debug("Message %s have been created" % obj)
+        logger.debug("Message %s created" % obj)
+        return obj
+
+
+class BaseImageManager(models.Manager):
+
+    def create(self, **kwargs):
+        obj = self.model(**kwargs)
+        obj.save()
+        logger.debug("BaseImage %s created" % obj)
         return obj
