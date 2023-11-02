@@ -85,7 +85,8 @@ class FriendRequestManager(models.Manager):
     @classmethod
     def invalidate_user_friend_request_cache(cls, user_pk: int) -> None:
         cache.delete(key=cls._user_friend_request_cache_key(user_pk))
-        logger.debug("Invalidate cache for user %s" % user_pk)
+        cache.delete(key=cls._user_sent_requests_cache_key(user_pk))
+        logger.debug("Invalidate friend request cache for user %s" % user_pk)
 
     def user_sent_count(self, user_pk: int) -> int:
         """returns the cached sent count for a user given by user_pk"""
@@ -125,7 +126,7 @@ class FriendRequestManager(models.Manager):
                 logger.debug("Updating sent requests for user with pk %s " % user_pk)
                 sent_req = set(self.filter(
                     (Q(user_from=user) | Q(user_to=user)) & Q(status=self.model.Status.SENT)
-                                  ).select_related("user_to", "user_from").values_list('pk', flat=1))
+                                  ).select_related("user_to").values_list('user_to__pk', flat=1))
                 cache.set(
                     key=cache_key,
                     value=sent_req,
