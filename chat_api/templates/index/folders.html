@@ -3,22 +3,18 @@
 
 
 <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
-    {% for folder in folders %}
-    {% with name=folder.name %}
-    
-    {% if forloop.counter == 1 %}
         <li class="nav-item" role="presentation">
-            <button class="nav-link active" id="pills-{{ name|join:'' }}-tab" data-bs-toggle="pill" data-bs-target="#pills-{{ name|join:'' }}" type="button" role="tab" aria-controls="pills-{{ name|join:'' }}" aria-selected="true">{{ name }}</button>
+            <button class="nav-link active" id="pills-all-tab" data-bs-toggle="pill" data-bs-target="#pills-all" type="button" role="tab" aria-controls="pills-all" aria-selected="true">All</button>
         </li>
-    {% else %}
-    <li class="nav-item d-flex" role="presentation">
-        <button class="nav-link" id="pills-{{ name|join:'' }}-tab" data-bs-toggle="pill" data-bs-target="#pills-{{ name|join:'' }}" type="button" role="tab" aria-controls="pills-{{ name|join:'' }}" aria-selected="true">
-            {{ name }}
-        </button>
-    </li>
-    {% endif %}
-    {% endwith %}
-    {% endfor %}
+        {% for folder in folders %}
+            {% with name=folder.name %}
+                <li class="nav-item d-flex" role="presentation">
+                    <button class="nav-link" id="pills-{{ name|join:'' }}-tab" data-bs-toggle="pill" data-bs-target="#pills-{{ name|join:'' }}" type="button" role="tab" aria-controls="pills-{{ name|join:'' }}" aria-selected="true">
+                        {{ name }}
+                    </button>
+                </li>
+            {% endwith %}
+        {% endfor %}
     <li class="nav-item" role="presentation">
         <button class="nav-link" data-bs-toggle="modal" data-bs-target="#addFolderModal" type="button" role="tab">
             <img style="width: 15px;" src="{% static 'add_folder.png' %}">

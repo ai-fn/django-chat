@@ -3,9 +3,9 @@
 {% load i18n %}
 
 
-{% if not folder.rooms|length == 0 %}
+{% if not rooms|length == 0 %}
     <div class="table-responsive">
-        {% for room in folder.rooms|sort:'' %}
+        {% for room in rooms|sort:'' %}
             <div class="room-container">
                 <div class="room">
                     <a href="{% url 'chat' room.id %}">
@@ -41,7 +41,7 @@
                         <ul class="dropdown-menu text-bg-dark" aria-labelledby="outerDropdown">
                             {% for folder in folders %}
                             <li>
-                                <form  action="{% url 'add-room-to-folder' %}" method="post">
+                                <form action="{% url 'add-room-to-folder' %}" method="post">
                                     {% csrf_token %}
                                     <input type="hidden" name="folder-id" id="folder-id" value="{{ folder.id }}">
                                     <input type="hidden" name="room-id" id="room-id" value="{{ room.id }}">
@@ -49,15 +49,15 @@
                                 </form>
                             </li>
                             {% endfor %}
-                            {% if folder.name != 'All' %}
-                            <li>
-                                <form  action="{% url 'remove-room-from-folder' %}" method="post">
-                                    {% csrf_token %}
-                                    <input type="hidden" name="folder-id" id="folder-id" value="{{ folder.id }}">
-                                    <input type="hidden" name="room-id" id="room-id" value="{{ room.id }}">
-                                    <button type="submit" class="nav-link btn btn-danger">Remove from folder</button>
-                                </form>
-                            </li>
+                            {% if rm_rooms %}
+                                <li>
+                                    <form action="{% url 'remove-room-from-folder' %}" method="post">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="folder-id" id="folder-id" value="{{ folder.id }}">
+                                        <input type="hidden" name="room-id" id="room-id" value="{{ room.id }}">
+                                        <button type="submit" class="nav-link btn btn-danger">Remove from folder</button>
+                                    </form>
+                                </li>
                             {% endif %}
                         </ul>
                     </div>
@@ -69,7 +69,7 @@
     <div class="alert alert-default text-center">{% translate "No rooms." %}</div>
 {% endif %}
 
-{% if folder.name != 'All' %}
+{% if rm_rooms %}
     <form class="remove-folder-form" method="post" action="{% url 'remove-folder' %}">
         {% csrf_token %}
         <input type="hidden" name="folder-id" id="folder-id" value="{{ folder.id }}">
