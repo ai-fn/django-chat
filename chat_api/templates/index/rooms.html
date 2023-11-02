@@ -80,20 +80,17 @@
 
 
     <div class="tab-content" id="pills-tabContent">
+        <div class="tab-pane fade show active" id="pills-all" role="tabpanel" aria-labelledby="pills-all-tab" tabindex="0">
+            {% include "index/folders_partial.html" with rooms=rooms folders=folders %}
+        </div>
         {% for folder in folders %}
             {% with name=folder.name %}
-            {% if forloop.counter == 1 %}
-                <div class="tab-pane fade show active" id="pills-{{ name|join:'' }}" role="tabpanel" aria-labelledby="pills-{{ name|join:'' }}-tab" tabindex="0">
-                    {% include "index/folders_partial.html" with folder=folder folders=folders %}
-                </div>
-            {% else %}
                 <div class="tab-pane fade" id="pills-{{ name|join:'' }}" role="tabpanel" aria-labelledby="pills-{{ name|join:'' }}-tab" tabindex="0">
-                    {% include "index/folders_partial.html" with folder=folder folders=folders %}
+                    {% include "index/folders_partial.html" with rooms=folder.rooms folders=folders rm_rooms=True %}
                 </div>
-            {% endif %}
             {% endwith %}
         {% endfor %}
-    </div> 
+    </div>
 </div>
-    
+
 {% endblock %}
