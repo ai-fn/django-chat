@@ -97,24 +97,20 @@ class RegisterView(APIView):
                 email=email,
                 password=password,
             )
-            favorite_room = Room.objects.create(name='Favorites')
-            favorite_room.members.add(user)
-            Folder.objects.create(name='All', user=user).rooms.add(favorite_room)
-            Folder.objects.create(name='Directs', user=user).rooms.add(favorite_room)
             logger.info("User %s successfully registered" % user)
             _send_verify_email(request, _generate_unique_code(request, user), user)
             logger.info("Email with confirm code have been sent to user %s" % user)
         else:
             errors_json = form.errors.as_json()
-
             errors_dict = json.loads(errors_json)
 
             for field, errors in errors_dict.items():
                 for error in errors:
                     message = error['message']
-                    messages.warning(request, message)
+                    messages.warning(request, _(message))
                     logger.info("Got an invalid register form: %s" % message)
             return redirect('register')
+
         return redirect('login')
 
 
@@ -144,10 +140,10 @@ class EmailVerifyView(APIView):
             login(request, user)
             user.is_email_confirmed = True
             user.save()
-            messages.success(request, 'User %s email successfully verified' % request.user)
+            messages.success(request, _('User %s email successfully verified' % request.user))
             logger.info('User %s email successfully verified' % request.user)
         else:
-            messages.warning(request, "User %s now found" % request.user)
+            messages.warning(request, _("User %s now found" % request.user))
             logger.info("User %s now found" % request.user)
         return redirect('login')
 
@@ -265,9 +261,8 @@ class CreateRoom(APIView):
         new_room.save()
         all_fold = Folder.objects.filter(name='All', user=user)[0]
         all_fold.rooms.add(new_room)
-        all_fold.save()
         logger.info("Room %s has been create by user %s", new_room, user)
-        return redirect('http://127.0.0.1:8000/chats/')
+        return redirect('chats')
 
 
 class RemoveFriend(APIView):
@@ -293,12 +288,11 @@ class Users(APIView):
     def get(request):
         return render(request, 'index/users.html', context={
             'user': UserSerialize(request.user).data,
-            'users': UserSerialize(CustomUser.objects.filter(~Q(email__contains=request.user.email)), many=True).data,
+            'users': UserSerialize(CustomUser.objects.filter(~Q(pk=request.user.pk)), many=True).data,
             'friends': UserSerialize(request.user.Friends.all(), many=True).data,
             'requests': FriendRequest.objects.filter(user_from=request.user),
             'unread': Notification.objects.filter(user=request.user, viewed=0),
-            'request_sent_for': UserSerialize(*FriendRequest.objects.requests_sent_for(request.user.pk),
-                                              many=True).data,
+            'request_sent_for': FriendRequest.objects.requests_sent_for(request.user.pk),
             'search_form': SearchForm(),
         })
 
@@ -453,10 +447,10 @@ def _send_verify_email(
                     settings.EMAIL_HOST_PASSWORD
                     )
     if res:
-        messages.success(request, 'Message successfully sent')
+        messages.success(request, _('Message successfully sent'))
         logger.debug('Message successfully sent')
     else:
-        messages.error(request, 'Message sent failed')
+        messages.error(request, _('Message sent failed'))
         logger.warning('Message sent failed')
     return render(request, 'index/login.html')
 
@@ -495,13 +489,16 @@ class SearchUsers(APIView):
             users = CustomUser.objects.filter(
                 Q(username__icontains=body) | Q(First_Name__icontains=body) | Q(Second_Name__icontains=body)
             )
-            return render(request, 'index/users.html',
-                          context={
-                              'user': UserSerialize(request.user).data,
-                              'search_form': SearchForm(),
-                              'users': UserSerialize(users, many=True, ).data,
-                              'friends': UserSerialize(request.user.Friends.all(), many=True).data,
-                              'requests': FriendRequest.objects.filter(user_from=request.user),
-                              'unread': Notification.objects.filter(user=request.user, viewed=0),
-                              'request_sent_for': FriendRequest.objects.requests_sent_for(request.user.pk)
-                          })
+            return render(
+                request,
+                'index/users.html',
+                context={
+                    'user': UserSerialize(request.user).data,
+                    'search_form': SearchForm(),
+                    'users': UserSerialize(users, many=True, ).data,
+                    'friends': UserSerialize(request.user.Friends.all(), many=True).data,
+                    'requests': FriendRequest.objects.filter(user_from=request.user),
+                    'unread': Notification.objects.filter(user=request.user, viewed=0),
+                    'request_sent_for': FriendRequest.objects.requests_sent_for(request.user.pk)
+                }
+            )
