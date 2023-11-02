@@ -1,17 +1,29 @@
 import os
 from django.contrib.auth.base_user import AbstractBaseUser
+from django.core.files.base import ContentFile
+from django.core.files.storage import default_storage
 from django.db import models
+
+from PIL import Image
+from io import BytesIO
 
 from django.utils.translation import gettext_lazy as _
 from .managers import *
-from chat.settings import MEDIA_ROOT
+
+DEFAULT_ROOM_IMAGE_PATH = 'images/room-images/base-room.png'
+DEFAULT_USER_IMAGE_PATH = 'images/users-avatars/base-user.png'
 
 
-def get_upload_path(instance, filename):
-    users_img = f'images/users-avatars/User_{instance.pk}/'
-    if os.path.exists(os.path.join(MEDIA_ROOT, users_img + filename)):
-        return filename
-    return os.path.join(users_img, filename)
+def get_upload_path(instance, filename: str):
+    logger.debug(instance, filename)
+
+    if filename.replace("_compressed", "") in [DEFAULT_USER_IMAGE_PATH, DEFAULT_ROOM_IMAGE_PATH]:
+        return os.path.join(instance.__class__.__name__.lower(), filename)
+
+    if instance.pk:
+        return os.path.join(instance.__class__.__name__.lower(), instance.pk, "images",  filename)
+
+    return os.path.join(instance.__class__.__name__.lower(), "images",  filename)
 
 
 class CustomUser(AbstractBaseUser):
@@ -22,7 +34,7 @@ class CustomUser(AbstractBaseUser):
     Second_Name = models.CharField(max_length=255, null=False, default='Иванов')
     Patronymic = models.CharField(null=True, max_length=255)
     Date_of_birth = models.DateField(auto_now_add=True, null=False)
-    Avatar = models.ImageField(upload_to=get_upload_path, default='images/users-avatars/base-user.png', null=True)
+    Avatar = models.ForeignKey("BaseImage", on_delete=models.SET_NULL, null=True)
     Friends = models.ManyToManyField('self')
     is_deactivated = models.BooleanField(null=False, default=False)
     is_email_confirmed = models.BooleanField(null=False, default=False)
@@ -49,9 +61,12 @@ class CustomUser(AbstractBaseUser):
         verbose_name = 'User'
         verbose_name_plural = 'Users'
 
-
-def room_directory_path(instance, filename):
-    return f"images/room-images/Room_{instance.pk}/{filename}"
+    def save(self, *args, **kwargs):
+        if not self.Avatar:
+            self.Avatar, created = BaseImage.objects.get_or_create(
+                image=f"baseimage/{DEFAULT_USER_IMAGE_PATH}", defaults={"image": DEFAULT_USER_IMAGE_PATH}
+            )
+        super().save(*args, **kwargs)
 
 
 class Room(models.Model):
@@ -63,7 +78,8 @@ class Room(models.Model):
 
         @classmethod
         def get_from_old_name(cls, name: str) -> object:
-            """ Map old name to enum
+            """
+                Map old name to enum
 
                 Raises ValueError for invalid names.
             """
@@ -79,7 +95,7 @@ class Room(models.Model):
 
     name = models.CharField(null=False, default='unknown_room')
     members = models.ManyToManyField(CustomUser, related_name='Room_User')
-    image = models.ImageField(upload_to=room_directory_path, default='images/room-images/base-room.png', null=True)
+    image = models.ForeignKey("BaseImage", on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True, null=False)
     type = models.CharField(choices=Type.choices, default=Type.DIRECT, max_length=6)
     objects = RoomManager()
@@ -90,6 +106,13 @@ class Room(models.Model):
 
     def __str__(self):
         return f'{self.type}__{self.pk}__{self.name}'
+
+    def save(self, *args, **kwargs):
+        if not self.image:
+            self.image, created = BaseImage.objects.get_or_create(
+                image=f"baseimage/{DEFAULT_ROOM_IMAGE_PATH}", defaults={"image": DEFAULT_ROOM_IMAGE_PATH}
+            )
+        super().save(*args, **kwargs)
 
 
 class Folder(models.Model):
@@ -122,3 +145,31 @@ class Message(models.Model):
 
     def __str__(self):
         return f'Message__({self.sender} - {self.room})'
+
+
+class BaseImage(models.Model):
+    image = models.ImageField(upload_to=get_upload_path, verbose_name='Image')
+    objects = BaseImageManager()
+
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            self.image = compress(self.image)
+        super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        default_storage.delete(self.image.name)
+        super().delete(*args, **kwargs)
+
+    def __str__(self):
+        return f"BaseImage__{self.pk}__{self.image.name}"
+
+
+def compress(image):
+    im = Image.open(image)
+    im_io = BytesIO()
+    im.save(im_io, format='PNG', quality=70)
+
+    filename, extension = os.path.splitext(image.name)
+    new_filename = f"{filename}_compressed{extension}"
+    new_image = ContentFile(im_io.getvalue(), name=new_filename)
+    return new_image
