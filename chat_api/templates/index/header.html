@@ -9,7 +9,7 @@
         <div class="user-name">
             <span>Hello, {{ user.username }} </span>
             <a href="{% url 'profile' user.user_id %}" class="profile">
-                <div class="avatar small" style="background-image: url({{ user.Avatar }});"></div>
+                <div class="avatar small" style="background-image: url({{ user.Avatar.image }});"></div>
             </a>
         </div>
         
