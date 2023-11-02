@@ -97,6 +97,9 @@ class RegisterView(APIView):
                 email=email,
                 password=password,
             )
+            favorite_room = Room.objects.create(name='Favorites')
+            favorite_room.members.add(user)
+            Folder.objects.create(name='Directs', user=user).rooms.add(favorite_room)
             logger.info("User %s successfully registered" % user)
             _send_verify_email(request, _generate_unique_code(request, user), user)
             logger.info("Email with confirm code have been sent to user %s" % user)
@@ -167,14 +170,15 @@ class ChatsView(APIView):
 
         if request.user.is_anonymous:
             return redirect('login')
-        rooms = RoomSerialize(Room.objects.filter(members=user), many=True, context={'request': request, })
+
+        rooms = RoomSerialize(Room.objects.filter(members=user), many=True, context={'request': request})
         folders = FolderSerialize(
             Folder.objects.filter(user=user).order_by('name'),
             many=True,
-            context={'request': request, }
+            context={'request': request}
         ).data
         return render(request, 'index/rooms.html', {
-            'rooms': rooms,
+            'rooms': rooms.data,
             'folders': folders,
             'user': UserSerialize(request.user).data,
             'unread': Notification.objects.filter(user=user, viewed=0),
@@ -208,7 +212,6 @@ class DirectView(APIView):
 
     @staticmethod
     def post(request):
-        print(request.data.get('user_id'))
         user = CustomUser.objects.get(pk=request.data.get('user_id'))
         try:
             room = Room.objects.annotate(count=Count('members')).filter(
@@ -218,19 +221,6 @@ class DirectView(APIView):
             room = Room.objects.create(name="Direct with %s" % user.username, type=Room.Type.DIRECT)
             logger.info("Room %s created by user %s", room, request.user)
             room.members.add(user.user_id, request.user.user_id)
-            room.save()
-            directs_fold = Folder.objects.get(name='Directs', user=request.user)
-            all_fold = Folder.objects.get(name='All', user=request.user)
-            directs_fold_to = Folder.objects.get(name='Directs', user=user)
-            all_fold_to = Folder.objects.get(name='All', user=user)
-            directs_fold.rooms.add(room.pk)
-            all_fold.rooms.add(room.pk)
-            directs_fold_to.rooms.add(room.pk)
-            all_fold.rooms_to.add(room.pk)
-            directs_fold.save()
-            all_fold.save()
-            directs_fold_to.save()
-            all_fold_to.save()
         chat_messages = MessageSerialize(Message.objects.filter(room=room.pk), many=True).data
         users = UserSerialize(user.Friends, many=True).data
         context = {
@@ -259,8 +249,6 @@ class CreateRoom(APIView):
         if request.data.get('room-image'):
             new_room.image = request.data.get('room-image')
         new_room.save()
-        all_fold = Folder.objects.filter(name='All', user=user)[0]
-        all_fold.rooms.add(new_room)
         logger.info("Room %s has been create by user %s", new_room, user)
         return redirect('chats')
 
@@ -337,7 +325,9 @@ class UpdProfImage(APIView):
         form_upd_prof_img = UpdProfImg(data=request.data, files=request.FILES)
         if form_upd_prof_img.is_valid():
             img = form_upd_prof_img.cleaned_data['img']
-            request.user.Avatar = img
+            request.user.Avatar, created = BaseImage.objects.get_or_create(
+                image=f"baseimage/{img}", defaults={"image": img}
+            )
             request.user.save()
         return redirect('profile', user_id=request.user.user_id)
 
