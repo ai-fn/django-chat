@@ -67,6 +67,20 @@ class UpdProfImg(forms.Form):
     )
 
 
+class CreateRoomForm(forms.Form):
+    room_name = forms.CharField(
+        label="",
+        widget=forms.TextInput(
+            attrs={'class': 'form-control text-bg-dark', 'style': 'margin-bottom: 10px;', 'placeholder': 'Room name...'}
+        ),
+        max_length=100,
+    )
+    room_img = forms.ImageField(
+        label='',
+        widget=forms.FileInput(attrs={'id': 'imgInput', 'class': 'form-control', 'accept': 'image/*'})
+    )
+
+
 class SearchForm(forms.Form):
     body = forms.CharField(
         label='',
