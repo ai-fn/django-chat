@@ -6,14 +6,16 @@
 {% endblock %}
 
 {% block content %}
-<form class="form" class="form" action="{% url 'register' %}" method="POST">
-    {% csrf_token %}
-    <img class="logo" src="https://cdn.you.com/img/shared/logos/ydc-logo.svg">
-    <h2>Sign up</h2>
-    {{ form }}
-    <input class="inp" type="submit" value="continue" name="submit-btn" id="submit-btn">
-    <span id="reg-lbl">Have account already?<a id="reg-a" href="{% url 'login' %}">Login</a></span>
-</form>
+<div class="form">
+    <form id="inputCredForm" action="{% url 'register' %}" method="POST">
+        {% csrf_token %}
+        <img class="logo" src="https://cdn.you.com/img/shared/logos/ydc-logo.svg">
+        <h2>Sign up</h2>
+        {{ form }}
+        <input class="inp" type="submit" value="continue" name="submit-btn" id="submit-btn">
+        <span id="reg-lbl">Have account already?<a id="reg-a" href="{% url 'login' %}">Login</a></span>
+    </form>    
+</div>
 {% endblock %}
 {% block scripts %}
     <script src="{% static 'js/login.js' %}"></script>

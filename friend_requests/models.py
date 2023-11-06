@@ -48,7 +48,6 @@ class FriendRequest(models.Model):
         super().save(*args, **kwargs)
         FriendRequest.objects.invalidate_user_friend_request_cache(self.user_from.pk)
         FriendRequest.objects.invalidate_user_friend_request_cache(self.user_to.pk)
-        pass
 
     def delete(self, *args, **kwargs) -> None:
         super().delete(*args, **kwargs)

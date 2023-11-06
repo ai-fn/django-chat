@@ -35,10 +35,10 @@
 
 <form class="form-1" enctype="multipart/form-data" method="post" action="{% url 'upd-prof-img' %}">
     {% csrf_token %}
-    <div id="avatarImage" style="background-image: url({{ user_profile.Avatar.image }})"></div>
-      {% if not form.disabled %}
-        {{ upd_prof_img.as_p }}
-        <button type="submit" class="inp btn btn-secondary">Sumbit</button>
+    <div id="avatarImage" style="background-image: url({{ user_profile.Avatar }})"></div>
+    {% if not form.disabled %}
+      {{ upd_prof_img.as_p }}
+      <button type="submit" class="inp btn btn-secondary">Submit</button>
     {% endif %}
 </form>
     

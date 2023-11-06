@@ -25,7 +25,8 @@ def request_list(request):
     sent = RequestSerializer(requests_list_qs.filter(status=FriendRequest.Status.SENT), many=1).data
     logger.debug(
         "User %s has %s accepted, %s declined and %s sent friend requests",
-        len(accepted), len(declined), len(sent))
+        request.user, len(accepted), len(declined), len(sent)
+    )
     context = {
         'user': (UserSerialize(request.user)).data,
         'accepted': accepted,

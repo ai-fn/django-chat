@@ -12,7 +12,7 @@
                         <div class="avatar small" style="background-image: url({{ room.image }});"></div>
                     </a>
                     <a class="room-main-block" href="{% url 'chat' room.id %}">
-                        <div class="room-main-block">
+                        <div>
                             <div class="room-name d-flex" style="justify-content: space-between;">
                                 <span><strong>{{room.name}}</strong></span>
                                 <span><small>{{room.last_message.created_at_formatted}}</small></span>

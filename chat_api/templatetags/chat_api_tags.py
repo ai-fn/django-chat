@@ -17,9 +17,11 @@ def join(value, join_by: str, *args, **kwargs):
 @register.filter(name='sort')
 def sort(value, sort_by: str):
     try:
-        res = sorted(value,
-                     key=lambda x: x["last_message"]["sent_at"] if x["last_message"]["room"] is not None else x[
-                         "created_at"], reverse=True)
+        res = sorted(
+            value,
+            key=lambda x: x["last_message"]["sent_at"] if x["last_message"]["room"] is not None else x["created_at"],
+            reverse=True
+        )
     except (KeyError, ValueError):
         return value
     return res

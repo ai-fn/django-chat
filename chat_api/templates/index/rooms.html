@@ -17,16 +17,15 @@
             <h1 class="modal-title fs-5 text-bg-dark" id="ModalLabel">Create room</h1>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-        <div class="modal-body">
-            <form class="create-room-form" method="post" action="{% url 'create-chat' %}">
-                {% csrf_token %}
-                <input class="form-control text-bg-dark" style="margin-bottom: 10px;" placeholder="room name" type="text" name="room-name" id="room-name-inp" required>
-                <input class="form-control" accept=".png, .jpeg, .jpg" type="file" name="room-image" id="room-image-inp">
-                <button style="margin: 10px 1.5rem;" type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button style="margin: 0px 1.5rem;" type="submit" class="btn btn-success">Create room</button>
-            </form>
-        </div>
-        
+            <div class="modal-body">
+                <div class="roomImgPrev" id="roomImgPrev"></div>
+                <form class="create-room-form" enctype="multipart/form-data" method="post" action="{% url 'create-chat' %}">
+                    {% csrf_token %}
+                    {{ create_room_form.as_p }}
+                    <button style="margin: 10px 1.5rem;" type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button style="margin: 0px 1.5rem;" type="submit" class="btn btn-success">Create room</button>
+                </form>
+            </div>
         </div>
     </div>
 </div>

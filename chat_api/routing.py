@@ -4,5 +4,4 @@ from .consumers import ChatConsumer
 
 websocket_urlpatterns = [
     path('ws/chat/', ChatConsumer.as_asgi()),
-    path('ws/direct/', ChatConsumer.as_asgi()),
 ]

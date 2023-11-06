@@ -57,9 +57,6 @@ class CustomUser(AbstractBaseUser):
         'username',
     )
 
-    class Meta:
-        verbose_name = 'User'
-        verbose_name_plural = 'Users'
 
     def save(self, *args, **kwargs):
         if not self.Avatar:
@@ -100,10 +97,6 @@ class Room(models.Model):
     type = models.CharField(choices=Type.choices, default=Type.DIRECT, max_length=6)
     objects = RoomManager()
 
-    class Meta:
-        verbose_name = 'Room'
-        verbose_name_plural = 'Rooms'
-
     def __str__(self):
         return f'{self.type}__{self.pk}__{self.name}'
 
@@ -122,10 +115,6 @@ class Folder(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     objects = FolderManager()
 
-    class Meta:
-        verbose_name = 'Folder'
-        verbose_name_plural = 'Folder'
-
     def __str__(self):
         return f"Folder__{self.pk}"
 
@@ -139,8 +128,6 @@ class Message(models.Model):
     objects = MessageManager()
 
     class Meta:
-        verbose_name = 'Message'
-        verbose_name_plural = 'Messages'
         ordering = ("-sent_at", )
 
     def __str__(self):
