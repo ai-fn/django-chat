@@ -1,4 +1,6 @@
 import os
+from django.conf import settings
+
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
@@ -15,15 +17,16 @@ DEFAULT_USER_IMAGE_PATH = 'images/users-avatars/base-user.png'
 
 
 def get_upload_path(instance, filename: str):
-    logger.debug(instance, filename)
 
-    if filename.replace("_compressed", "") in [DEFAULT_USER_IMAGE_PATH, DEFAULT_ROOM_IMAGE_PATH]:
-        return os.path.join(instance.__class__.__name__.lower(), filename)
+    if os.path.isfile(os.path.join(settings.MEDIA_ROOT, filename)):
+        return filename
 
-    if instance.pk:
-        return os.path.join(instance.__class__.__name__.lower(), instance.pk, "images",  filename)
+    logger.debug(f"Upload new image: {filename} for {instance}")
 
-    return os.path.join(instance.__class__.__name__.lower(), "images",  filename)
+    if filename in [DEFAULT_USER_IMAGE_PATH, DEFAULT_ROOM_IMAGE_PATH]:
+        return filename
+
+    return os.path.join(instance.__class__.__name__.lower(), str(instance.pk), "images",  filename)
 
 
 class CustomUser(AbstractBaseUser):
@@ -34,7 +37,7 @@ class CustomUser(AbstractBaseUser):
     Second_Name = models.CharField(max_length=255, null=False, default='Иванов')
     Patronymic = models.CharField(null=True, max_length=255)
     Date_of_birth = models.DateField(auto_now_add=True, null=False)
-    Avatar = models.ForeignKey("BaseImage", on_delete=models.SET_NULL, null=True)
+    Avatar = models.ImageField(upload_to=get_upload_path, null=True, default=DEFAULT_USER_IMAGE_PATH)
     Friends = models.ManyToManyField('self')
     is_deactivated = models.BooleanField(null=False, default=False)
     is_email_confirmed = models.BooleanField(null=False, default=False)
@@ -57,13 +60,22 @@ class CustomUser(AbstractBaseUser):
         'username',
     )
 
+    @classmethod
+    def from_db(cls, db, field_names, values):
+        instance = super().from_db(db, field_names, values)
+        instance._old_Avatar = instance.Avatar
+        return instance
 
     def save(self, *args, **kwargs):
-        if not self.Avatar:
-            self.Avatar, created = BaseImage.objects.get_or_create(
-                image=f"baseimage/{DEFAULT_USER_IMAGE_PATH}", defaults={"image": DEFAULT_USER_IMAGE_PATH}
-            )
+        if self.Avatar:
+            if hasattr(self, "_old_Avatar") and self._old_Avatar != self.Avatar:
+                self.Avatar = compress(self.Avatar)
         super().save(*args, **kwargs)
+
+    def delete(self, using=None, keep_parents=False):
+        if self.Avatar:
+            self.Avatar.storage.delete(self.Avatar.name)
+        super().delete(using=using, keep_parents=keep_parents)
 
 
 class Room(models.Model):
@@ -92,7 +104,7 @@ class Room(models.Model):
 
     name = models.CharField(null=False, default='unknown_room')
     members = models.ManyToManyField(CustomUser, related_name='Room_User')
-    image = models.ForeignKey("BaseImage", on_delete=models.CASCADE)
+    image = models.ImageField(upload_to=get_upload_path, null=True, default=DEFAULT_ROOM_IMAGE_PATH)
     created_at = models.DateTimeField(auto_now_add=True, null=False)
     type = models.CharField(choices=Type.choices, default=Type.DIRECT, max_length=6)
     objects = RoomManager()
@@ -100,12 +112,22 @@ class Room(models.Model):
     def __str__(self):
         return f'{self.type}__{self.pk}__{self.name}'
 
+    @classmethod
+    def from_db(cls, db, field_names, values):
+        instance = super().from_db(db, field_names, values)
+        instance._old_image = instance.image
+        return instance
+
     def save(self, *args, **kwargs):
-        if not self.image:
-            self.image, created = BaseImage.objects.get_or_create(
-                image=f"baseimage/{DEFAULT_ROOM_IMAGE_PATH}", defaults={"image": DEFAULT_ROOM_IMAGE_PATH}
-            )
+        if self.image:
+            if hasattr(self, "_old_image") and self._old_image != self.image:
+                self.image = compress(self.image)
         super().save(*args, **kwargs)
+
+    def delete(self, using=None, keep_parents=False):
+        if self.image:
+            self.image.storage.delete(self.image.name)
+        super().delete(using=using, keep_parents=keep_parents)
 
 
 class Folder(models.Model):
@@ -134,29 +156,15 @@ class Message(models.Model):
         return f'Message__({self.sender} - {self.room})'
 
 
-class BaseImage(models.Model):
-    image = models.ImageField(upload_to=get_upload_path, verbose_name='Image')
-    objects = BaseImageManager()
-
-    def save(self, *args, **kwargs):
-        if not self.pk:
-            self.image = compress(self.image)
-        super().save(*args, **kwargs)
-
-    def delete(self, *args, **kwargs):
-        default_storage.delete(self.image.name)
-        super().delete(*args, **kwargs)
-
-    def __str__(self):
-        return f"BaseImage__{self.pk}__{self.image.name}"
-
-
 def compress(image):
+
+    if os.path.exists(image.name):
+        return image
+
     im = Image.open(image)
     im_io = BytesIO()
     im.save(im_io, format='PNG', quality=70)
 
-    filename, extension = os.path.splitext(image.name)
-    new_filename = f"{filename}_compressed{extension}"
-    new_image = ContentFile(im_io.getvalue(), name=new_filename)
+    new_image = ContentFile(im_io.getvalue(), name=image.name)
+    logger.debug(f"Image compressed: {image.name}")
     return new_image

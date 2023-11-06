@@ -12,5 +12,5 @@ __pycache__/
 .env.docker
 db.sqlite3
 rest_framework
-staticfiles/js
 admin
+*/migrations

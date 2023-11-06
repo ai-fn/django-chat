@@ -12,16 +12,7 @@ from chat import settings
 base_user_img = settings.MEDIA_URL + 'images/users-avatars/base-user.png'
 
 
-class BaseImageSerialize(serializers.ModelSerializer):
-
-    class Meta:
-        model = BaseImage
-        exclude = []
-
-
 class UserSerialize(serializers.ModelSerializer):
-
-    Avatar = BaseImageSerialize()
 
     class Meta:
         model = CustomUser
