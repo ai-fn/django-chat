@@ -209,7 +209,7 @@ body {
     outline: none;
 }
 .inp {
-    font-size: large;
+    font-size: medium;
     text-align: center;
     color: white;
     border: 1px gray solid;
@@ -217,10 +217,11 @@ body {
     background-color: transparent;
     width: 65%;
     height: 35px;
-    margin: 2px 70px;
+    margin: 2px auto;
 }
 #submit-btn {
     width: 65%;
+    margin-bottom: 30px;
     background-color: #4b72f4ff;
 }
 #submit-btn:hover {
@@ -228,10 +229,6 @@ body {
     color: gray;
     transition: .5s ease-out;
     cursor: pointer;
-}
-#submit-btn {
-    margin-bottom: 30px;
-    background-color: #4b72f4ff;
 }
 #submit-btn:hover {
     background-color: white;
@@ -307,7 +304,7 @@ button:hover {
 }
 .room-main-block, .user-main-block {
     display: flex;
-    width: 100%;
+    width: 85%;
     flex-direction: column;
     justify-content: flex-start;
 }
@@ -451,4 +448,22 @@ span {
     margin-top: 6rem;
     max-height: 5rem;
     overflow: scroll;
+}
+.roomImgPrev {
+    width: 100px;
+    height: 100px;
+    margin: 10px auto;
+    border-radius: 50%;
+    background-image: url(/media/images/room-images/base-room.png);
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+}
+#inputCredForm {
+    display: flex;
+    text-align: center;
+    justify-content: center;
+    flex-direction: column;
+    min-width: 300px;
+    cursor: not;
 }
