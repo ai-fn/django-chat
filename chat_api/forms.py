@@ -61,10 +61,16 @@ class RegisterForm(UserCreationForm):
 
 
 class UpdProfImg(forms.Form):
-    img = forms.ImageField(label='', widget=forms.FileInput(
-        attrs={'id': 'imageInput', 'class': 'form-control', 'accept': 'image/*'}))
+    img = forms.ImageField(
+        label='',
+        widget=forms.FileInput(attrs={'id': 'imageInput', 'class': 'form-control', 'accept': 'image/*'})
+    )
 
 
 class SearchForm(forms.Form):
-    body = forms.CharField(label='', widget=forms.TextInput(attrs={
-        'type': 'search', 'placeholder': 'Search users...', 'class': 'inp', 'style': 'width: 100%;'}))
+    body = forms.CharField(
+        label='',
+        widget=forms.TextInput(
+            attrs={'type': 'search', 'placeholder': 'Search users...', 'class': 'inp', 'style': 'width: 100%;'}
+        )
+    )

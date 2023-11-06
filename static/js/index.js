@@ -1,5 +1,4 @@
 let open = false
-const room_pk = "{{ room.id }}"
 let room
 let user
 let isScrolling = false
@@ -161,11 +160,11 @@ form.addEventListener('submit', (e) => { sendMsg(e) })
 
 function logout() {
     $.post({
-        url: 'http://127.0.0.1:8000/logout/',
+        url: '/logout/',
         xhrFields: {
             withCredentials: true
         },
-        success: () => { window.location.href = "http://127.0.0.1:8000/login/" }
+        success: () => { window.location.href = "/login/" }
     })
 }
 
