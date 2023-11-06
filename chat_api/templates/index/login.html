@@ -5,16 +5,43 @@
     {% include 'index/form_errors.html' with form=form %}
 {% endblock %}
 
+{% block modal%}
+    <!-- Modal for resend confirm message -->
+<div class="modal fade" id="resendConfirmMessageModal" data-bs-theme="dark" tabindex="-1" aria-labelledby="ModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5 text-bg-dark" id="ModalLabel">Resend confirm message</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form class="resendConfirmMessageForm" id="resendConfirmMessageForm" action="{% url 'resend-confirm-message'%}" method="post">
+                    {% csrf_token %}
+                    <input class="form-control text-bg-dark" style="margin-bottom: 10px;" placeholder="Email" type="email" name="email" id="email" required>
+                    <button style="margin: 10px 1.5rem;" type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button id="resendButton" style="margin: 0px 1.5rem;" class="btn btn-success">Send</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
 {% block content %}
-<form class="form" id="login-form" action="{% url 'login' %}" method="POST">
-    {% csrf_token %}
-    <img class="logo" src="https://cdn.you.com/img/shared/logos/ydc-logo.svg">
-    <h2>Log in</h2>
-    {{ form }}
-    <input class="inp" type="submit" value="Continue" name="submit-btn" id="submit-btn">
-    <span id="reg-lbl">No account yet?<a id="reg-a" href="{% url 'register' %}">Create</a></span>
-</form>
+<div class="form">
+    <form id="inputCredForm" action="{% url 'login' %}" method="POST">
+        {% csrf_token %}
+        <img class="logo" src="https://cdn.you.com/img/shared/logos/ydc-logo.svg">
+        <h2>Log in</h2>
+        {{ form }}
+        <button class="inp" type="submit" name="submit-btn" id="submit-btn">Continue</button>
+        <span id="reg-lbl">No account yet?<a id="reg-a" href="{% url 'register' %}">Create</a></span>
+    </form>
+    <button class="btn btn-secondary" id="resendConfirmMessageBtn" data-bs-toggle="modal" data-bs-target="#resendConfirmMessageModal" title="Resend confirm message">Resend confirm message</button>
+</div>
+
 {% endblock %}
 {% block scripts %}
 <script src="{% static 'js/login.js' %}"></script>
+<script src="{% static 'js/blockSubmitBtn.js' %}"></script>
 {% endblock %}

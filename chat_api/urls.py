@@ -23,4 +23,5 @@ urlpatterns = [
     path('remove-room-from-folder/', RemoveRoomFromFolder.as_view(), name='remove-room-from-folder'),
     path('add-room-to-folder/', AddToFolder.as_view(), name='add-room-to-folder'),
     path('search-users/', SearchUsers.as_view(), name='search-users'),
+    path('resend-confirm-message/', ResendConfirmMessage.as_view(), name='resend-confirm-message'),
 ]
