@@ -21,7 +21,7 @@
           {% elif message.tags == 'danger' %}
               <svg style="height: 15px; width: 15px;" class="bi flex-shrink-0 me-2" role="img" aria-label="Danger:"><use xlink:href="#exclamation-triangle-fill"/></svg>
           {% endif %}
-          <div>{{message}}</div>
+          <div id="{{message}}">{{message}}</div>
           <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
       </div>
     {% endfor %}
