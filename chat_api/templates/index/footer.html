@@ -1,12 +1,16 @@
+{% load static %}
+
 <div class="footer">
     <footer>
         <div class="foot-main-container">
             <div id="form">
                 <textarea maxlength="1600"
-                    id="inp-message" placeholder="Введите сообщение" type="text" name="message"
-                    spellcheck="false" autocomplete="false"></textarea>
-                <button id="inp-send-msg" type="button" name="submit">
-                    <img id="send-msg-img" src="https://cdn.you.com/img/shared/icon-send.svg" alt="tg">
+                    id="inp-message" placeholder="Message" type="text" name="message"
+                    spellcheck="false" autocomplete="false">
+                </textarea>
+                <button id="inp-send-msg" class="inp-send-msg recording" type="button" name="submit">
+                    <img id="msg-send" class="icon send-msg-img" src="https://cdn.you.com/img/shared/icon-send.svg" alt="tg">
+                    <svg id="voice-rec" class="icon rec-msg-img shown" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="30" height="35" viewBox="0 0 1000 1000" xml:space="preserve"><rect x="0" y="0" width="100%" height="100%" fill="rgba(255,255,255,0)"/><g transform="matrix(28.4091 0 0 28.4091 500.0001 500.0001)" id="795168"><g vector-effect="non-scaling-stroke"><g transform="matrix(1 0 0 1 -0.004 -3.5)" id="Icon"><path style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: round; stroke-miterlimit: 2; is-custom-font: none; font-file-url: none; fill: rgb(255,255,255); fill-rule: evenodd; opacity: 1;" transform=" translate(-15.996, -12.5)" d="M 21.992 7.996 c 0 -3.309 -2.687 -5.996 -5.996 -5.996 c -3.309 0 -5.996 2.687 -5.996 5.996 l 0 9.008 c 0 3.309 2.687 5.996 5.996 5.996 c 3.309 0 5.996 -2.687 5.996 -5.996 c 0 0 0 -9.008 0 -9.008 Z m -2 0 l 0 9.008 c 0 2.205 -1.79 3.996 -3.996 3.996 c -2.205 0 -3.996 -1.791 -3.996 -3.996 c 0 0 0 -9.008 0 -9.008 c 0 -2.205 1.791 -3.996 3.996 -3.996 c 2.206 0 3.996 1.791 3.996 3.996 Z" stroke-linecap="round"/></g><g transform="matrix(1 0 0 1 -0.004 7)" id="Icon"><path style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: round; stroke-miterlimit: 2; is-custom-font: none; font-file-url: none; fill: rgb(255,255,255); fill-rule: evenodd; opacity: 1;" transform=" translate(-15.996, -23)" d="M 15 26.951 l 0.01 2.054 c 0.002 0.551 0.452 0.997 1.004 0.995 c 0.552 -0.003 0.998 -0.453 0.996 -1.005 l -0.01 -2.045 c 5.049 -0.504 8.996 -4.77 8.996 -9.95 c 0 -0.552 -0.448 -1 -1 -1 c -0.552 0 -1 0.448 -1 1 c 0 4.415 -3.585 8 -8 8 c -4.415 0 -8 -3.585 -8 -8 c 0 -0.552 -0.448 -1 -1 -1 c -0.552 0 -1 0.448 -1 1 c 0 5.183 3.952 9.45 9.004 9.951 Z" stroke-linecap="round"/></g></g></g></svg>
                 </button>
             </div>
         </div>

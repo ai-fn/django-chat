@@ -2,10 +2,11 @@ import json
 import logging
 
 from asgiref.sync import async_to_sync
-from channels.db import database_sync_to_async
 from channels.generic.websocket import WebsocketConsumer
+from django.core.files import File
 from django.db.models import Q
 
+from .utils import *
 from .models import Room, CustomUser, Message
 from .serializers import MessageSerialize, UserSerialize, RoomSerialize
 from notifications.core import notify
@@ -49,6 +50,23 @@ class ChatConsumer(WebsocketConsumer):
 
     def receive(self, text_data=None, bytes_data=None):
         global room
+        if bytes_data is not None:
+
+            message = self.create_message()
+            with open(os.path.join(settings.MEDIA_ROOT, "voice-message.wav"), "wb") as file:
+                file.write(bytes_data)
+                file_name = file.name
+
+            comp_file = compress_audio(file_name)
+            with open(comp_file, 'rb') as compressed_file:
+                message.voice_file = File(compressed_file)
+                message.save()
+            os.remove(file_name)
+            os.remove(comp_file)
+
+            self.send_message_to_all(message)
+            return
+
         text_data_json = json.loads(text_data)
         if text_data_json['action'] == 'connect':
             self.room_name = text_data_json['roomName']
@@ -93,7 +111,10 @@ class ChatConsumer(WebsocketConsumer):
                     'message': 'failed',
                 }))
             return
-        message = self.create_message(text_data_json['message'])
+        self.send_message_to_all(self.create_message(text_data_json['message']))
+
+    def send_message_to_all(self, message: Message):
+        message = MessageSerialize(message)
 
         for user in room.members.filter(~Q(user_id=self.scope['user'].pk)):
             if user not in users_in_groups[self.room_group_name]:
@@ -125,16 +146,17 @@ class ChatConsumer(WebsocketConsumer):
             msg = self.get_message(item['id'])
             msg.users_read.add(self.scope['user'])
 
-    def create_message(self, message, **kwargs):
+    def create_message(self, message=None, voice_file=None, **kwargs):
         global room
         message = Message.objects.create(
             room=room,
             sender=self.scope['user'],
-            body=message
+            body=message,
+            voice_file=voice_file
         )
         for user in users_in_groups[self.room_group_name]:
             message.users_read.add(user)
-        return MessageSerialize(message)
+        return message
 
     @staticmethod
     def get_room(pk: int) -> Room:

@@ -143,14 +143,15 @@ class Folder(models.Model):
 
 class Message(models.Model):
     sender = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='sender_message')
-    body = models.TextField(max_length=1600, null=False)
+    body = models.TextField(max_length=1600, null=True)
+    voice_file = models.FileField(null=True, upload_to=get_upload_voice_path)
     sent_at = models.DateTimeField(auto_now_add=True, null=False)
     users_read = models.ManyToManyField(CustomUser, related_name='users_read')
     room = models.ForeignKey(Room, on_delete=models.CASCADE, related_name='room_message')
     objects = MessageManager()
 
     class Meta:
-        ordering = ("-sent_at", )
+        ordering = ("sent_at", )
 
     def __str__(self):
         return f'Message__({self.sender} - {self.room})'
