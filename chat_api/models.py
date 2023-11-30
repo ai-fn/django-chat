@@ -1,32 +1,15 @@
 import os
-from django.conf import settings
 
+from django.conf import settings
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.core.files.base import ContentFile
-from django.core.files.storage import default_storage
-from django.db import models
 
 from PIL import Image
 from io import BytesIO
 
 from django.utils.translation import gettext_lazy as _
 from .managers import *
-
-DEFAULT_ROOM_IMAGE_PATH = 'images/room-images/base-room.png'
-DEFAULT_USER_IMAGE_PATH = 'images/users-avatars/base-user.png'
-
-
-def get_upload_path(instance, filename: str):
-
-    if os.path.isfile(os.path.join(settings.MEDIA_ROOT, filename)):
-        return filename
-
-    logger.debug(f"Upload new image: {filename} for {instance}")
-
-    if filename in [DEFAULT_USER_IMAGE_PATH, DEFAULT_ROOM_IMAGE_PATH]:
-        return filename
-
-    return os.path.join(instance.__class__.__name__.lower(), str(instance.pk), "images",  filename)
+from .utils import get_upload_path, get_upload_voice_path
 
 
 class CustomUser(AbstractBaseUser):
@@ -37,7 +20,7 @@ class CustomUser(AbstractBaseUser):
     Second_Name = models.CharField(max_length=255, null=False, default='Иванов')
     Patronymic = models.CharField(null=True, max_length=255)
     Date_of_birth = models.DateField(auto_now_add=True, null=False)
-    Avatar = models.ImageField(upload_to=get_upload_path, null=True, default=DEFAULT_USER_IMAGE_PATH)
+    Avatar = models.ImageField(upload_to=get_upload_path, null=True, default=settings.DEFAULT_USER_IMAGE_PATH)
     Friends = models.ManyToManyField('self')
     is_deactivated = models.BooleanField(null=False, default=False)
     is_email_confirmed = models.BooleanField(null=False, default=False)
@@ -104,7 +87,7 @@ class Room(models.Model):
 
     name = models.CharField(null=False, default='unknown_room')
     members = models.ManyToManyField(CustomUser, related_name='Room_User')
-    image = models.ImageField(upload_to=get_upload_path, null=True, default=DEFAULT_ROOM_IMAGE_PATH)
+    image = models.ImageField(upload_to=get_upload_path, null=True, default=settings.DEFAULT_ROOM_IMAGE_PATH)
     created_at = models.DateTimeField(auto_now_add=True, null=False)
     type = models.CharField(choices=Type.choices, default=Type.DIRECT, max_length=6)
     objects = RoomManager()
