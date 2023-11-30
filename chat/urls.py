@@ -24,6 +24,7 @@ urlpatterns = [
     path('', include('chat_api.urls')),
     path('', include('notifications.urls')),
     path('', include('friend_requests.urls')),
+    path('social-auth/', include('social_django.urls', namespace='social')),
 ]
 
 if settings.DEBUG:

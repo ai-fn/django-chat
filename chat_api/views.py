@@ -1,6 +1,5 @@
 import json
 
-from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import login, logout, authenticate
 from django.db.models import Q, Count
@@ -509,8 +508,3 @@ class ResendConfirmMessage(APIView):
         _send_verify_email(request, user)
         logger.debug("Resend confirm message for user %s" % user)
         return redirect('login')
-
-
-
-
-
