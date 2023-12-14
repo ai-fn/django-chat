@@ -52,3 +52,5 @@ idna==3.4
 pycparser==2.21
 uritemplate==4.1.1
 djangorestframework==3.14.0
+social-auth-app-django==5.4.0
+django-cors-headers==4.3.1
