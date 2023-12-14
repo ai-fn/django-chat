@@ -18,12 +18,16 @@
                                 <span><small>{{room.last_message.created_at_formatted}}</small></span>
                             </div>
                             <div class="prev-last-msg">
-                                {% if room.last_message.body != "" %}
-                                    <div>
-                                        <span>{{room.last_message.sender.username}}:</span>
-                                        <span>{{room.last_message.body}}</span>
-                                    </div>
-                                {% endif %}
+                                    {% if room.last_message %}
+                                        <div>
+                                            <span>{{room.last_message.sender.username}}:</span>
+                                            {% if room.last_message.msg_type == "text" %}                                   
+                                                <span>{{room.last_message.body}}</span>
+                                            {% else %}
+                                                <span>{{room.last_message.msg_type}} message</span>
+                                            {% endif %}
+                                        </div>
+                                    {% endif %}                                
                                 <div class="unread-count" style="margin-left: auto;">
                                     {% if not room.unread_messages == 0 %}
                                         <span class="badge text-bg-primary" style="border-radius: 50%;">

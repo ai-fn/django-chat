@@ -80,8 +80,9 @@ class RoomSerialize(serializers.ModelSerializer):
         return 0
 
     @staticmethod
-    def get_last_message(obj: Room) -> ReturnDict:
-        return MessageSerialize(Message.objects.filter(room=obj).order_by('sent_at').last()).data
+    def get_last_message(obj: Room) -> ReturnDict | None:
+        last_message = Message.objects.filter(room=obj).order_by('sent_at').last()
+        return MessageSerialize(last_message).data if last_message is not None else None
 
 
 class FolderSerialize(serializers.ModelSerializer):

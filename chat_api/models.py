@@ -9,7 +9,7 @@ from io import BytesIO
 
 from django.utils.translation import gettext_lazy as _
 from .managers import *
-from .utils import get_upload_path, get_upload_voice_path
+from .utils import get_upload_path
 
 
 class CustomUser(AbstractBaseUser):

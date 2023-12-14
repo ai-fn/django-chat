@@ -18,7 +18,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-success" data-bs-dismiss="modal" onclick="addMembers()">Add members</button>
+                <button type="button" class="btn btn-success" data-bs-dismiss="modal" id="addMembersBtn" onclick="addMembers()">Add members</button>
             </div>
             </div>
         </div>
@@ -59,11 +59,13 @@
               {% endfor %}
             </div>
             <div class="modal-footer">
-                <form method="post" action="{% url 'leave-room' %}" style="width: 100%;">
-                    {% csrf_token %}
-                    <input type="hidden" name="room-id" id="room-id" value="{{ room.id }}">
-                    <button class="nav-link btn btn-danger" type="submit" style="color: gray; border: #6666 1px solid; width: 40%;">Leave room</button>
-                </form>
+                {% if room.type == 'chat' %}
+                    <form method="post" action="{% url 'leave-room' %}" style="width: 100%;">
+                        {% csrf_token %}
+                            <input type="hidden" name="room-id" id="room-id" value="{{ room.id }}">
+                        <button class="nav-link btn btn-danger" type="submit" style="color: gray; border: #6666 1px solid; width: 40%;">Leave room</button>
+                    </form>
+                {% endif %}
             </div>
           </div>
         </div>
@@ -76,10 +78,10 @@
 
 
     {% block content %}
-    {% include 'index/room-header.html' with room=room %}
-    <div class="main-container">
-        <div id="messages"></div>
-    </div>
+        {% include 'index/room-header.html' with room=room %}
+            <div class="main-container">
+                <div id="messages"></div>
+            </div>
     {% endblock %}
 
     {% block footer %}
