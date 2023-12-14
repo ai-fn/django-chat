@@ -83,4 +83,4 @@ Execute:
   - ASGI `daphne chat.asgi:application --bind 0.0.0.0 --port 8000`
   - WSGI `python manage.py runserver`
 
-Open up a browser and visit: http://127.0.0.1:8000/ , the you will see the chat.
+Open up a browser and visit: http://127.0.0.1:8000/ (http://127.0.0.1:80/ for nginx), then you will see the chat.

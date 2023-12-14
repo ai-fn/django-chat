@@ -30,7 +30,7 @@ asgiref==3.7.2
 daphne==4.0.0
 autobahn==23.6.2
 sqlparse==0.4.4
-psycopg2==2.9.9
+psycopg2-binary==2.9.9
 colorama==0.4.6
 cachetools==5.3.2
 certifi==2023.11.17
@@ -52,3 +52,5 @@ idna==3.4
 pycparser==2.21
 uritemplate==4.1.1
 djangorestframework==3.14.0
+social-auth-app-django==5.4.0
+django-cors-headers==4.3.1
