@@ -27,8 +27,9 @@ def compress_audio(input_file: str, instance) -> None:
     else:
         logger.info("FFmpeg is not installed")
     with open(result, "rb") as comp_file:
-        instance.voice_file = File(comp_file)
-        instance.save()
+        new_file = File(comp_file)
+        new_filename = os.path.basename(new_file.name)
+        instance.voice_file.save(new_filename, new_file, save=True)
     os.remove(input_file)
     if input_file != result:
         os.remove(result)
@@ -38,6 +39,7 @@ def compress(input_file: str, instance) -> None:
 
     result = input_file
     if check_ffmpeg_is_installed():
+
         name, ext = os.path.splitext(input_file)
         result = f"{name}_comp{ext}"
         ffmpeg_command = [
@@ -50,9 +52,10 @@ def compress(input_file: str, instance) -> None:
         logger.debug("File %s successfully compressed" % input_file)
     else:
         logger.info("FFmpeg is not installed")
-    with open(result, "rb") as comp_file:
-        instance.image = File(comp_file)
-        instance.save()
+    with (open(result, "rb") as comp_file):
+        new_file = File(comp_file)
+        new_filename = os.path.basename(new_file.name)
+        instance.image.save(new_filename, new_file, save=True)
     os.remove(input_file)
     if input_file != result:
         os.remove(result)
