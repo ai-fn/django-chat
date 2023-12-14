@@ -307,14 +307,20 @@ button:hover {
     border-radius: 1.2rem;
     border: #323335 1px solid;
     margin-bottom: 10px;
-    min-height: 64vh;
+    height: calc(100% - 7rem);
     max-width: 900px;
     flex-direction: column;
     align-items: center;
+    overflow-y: auto; 
+}
+.tab-content {
+    max-height: calc(100% - 3.5rem);
+    overflow-y: auto;
 }
 .main-container {
     margin: 0px 1rem;
     max-width: 850px;
+    height: 100%;
 }
 .room-main-block, .user-main-block {
     display: flex;
@@ -425,6 +431,7 @@ span {
 }
 .folders {
     justify-content: space-between;
+    margin-bottom: .3rem;
 }
 .nav-link {
     width: 100%;
