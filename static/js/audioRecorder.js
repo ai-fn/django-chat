@@ -1,8 +1,9 @@
 let mediaRecorder;
 let chunks = [];
 let audioBlob;
+let message;
 
-function startAudioRecording() {
+function startAudioRecording(ws) {
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
         console.log('getUserMedia supported');
         
@@ -12,19 +13,27 @@ function startAudioRecording() {
             .then((stream) => {
                 mediaRecorder = new MediaRecorder(stream);
 
-                mediaRecorder.onstop = async function() {
-                    audioBlob = new Blob(chunks, {type: 'audio/wav'} )
-                    bufferArray = await convertBlobToUint8(audioBlob);
-
-                    ws.send(bufferArray)
-                    // ws.send(JSON.stringify(message));
-                    console.log('Recording stopped.')
+                mediaRecorder.onstop = function() {
+                    console.log('Recording stopped.');
                 }
                 mediaRecorder.ondataavailable = function(event) {
                     if (event.data.size > 0)
                         chunks.push(event.data)
-                }
 
+                    const reader = new FileReader();
+                    audioBlob = new Blob(chunks, {type: 'audio/wav'});
+
+                    reader.onload = () => {
+                        const arrayBuffer = reader.result;
+                        const base64String = btoa(String.fromCharCode.apply(null, new Uint8Array(arrayBuffer)));
+                        message = {
+                            action: 'audio-message',
+                            audioFile: base64String,
+                        }
+                        ws.send(JSON.stringify(message));
+                    }
+                    reader.readAsArrayBuffer(audioBlob);
+                }
                 mediaRecorder.start();
             })
             .catch((err) => {
