@@ -243,13 +243,14 @@ class CreateRoom(APIView):
     def post(request):
         user = request.user
         form = CreateRoomForm(data=request.data, files=request.FILES)
-        print(form.errors)
         if form.is_valid():
             room_name = form.cleaned_data['room_name']
             new_room = Room.objects.create(name=room_name, type=Room.Type.CHAT)
             if form.cleaned_data['room_img']:
+                print(type(form.cleaned_data['room_img']))
                 new_room.image = form.cleaned_data['room_img']
                 new_room.save()
+                compress(new_room.image.path, new_room)
             new_room.members.add(user)
         else:
             logger.debug("Got an invalid form from %s" % request.user)

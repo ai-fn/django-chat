@@ -3,12 +3,16 @@ import os
 import subprocess
 
 from django.conf import settings
+from django.core.files import File
 
 logger = logging.getLogger(__name__)
 
 
-def compress_audio(input_file: str, instance=None) -> str:
+def compress_audio(input_file: str, instance) -> None:
     """Compress audio files by FFmpeg, make sure that installed on server"""
+
+    if instance.__class__.__name__ != "Message":
+        raise TypeError('%s class is not expected' % instance.__class__.__name__)
 
     result = input_file
 
@@ -22,7 +26,36 @@ def compress_audio(input_file: str, instance=None) -> str:
         logger.debug("File %s successfully compressed" % input_file)
     else:
         logger.info("FFmpeg is not installed")
-    return result
+    with open(result, "rb") as comp_file:
+        instance.voice_file = File(comp_file)
+        instance.save()
+    os.remove(input_file)
+    if input_file != result:
+        os.remove(result)
+
+
+def compress(input_file: str, instance) -> None:
+
+    result = input_file
+    if check_ffmpeg_is_installed():
+        name, ext = os.path.splitext(input_file)
+        result = f"{name}_comp{ext}"
+        ffmpeg_command = [
+                "ffmpeg",
+                "-i", input_file,
+                "-q:v", "20",
+                result
+        ]
+        subprocess.run(ffmpeg_command, shell=True)
+        logger.debug("File %s successfully compressed" % input_file)
+    else:
+        logger.info("FFmpeg is not installed")
+    with open(result, "rb") as comp_file:
+        instance.image = File(comp_file)
+        instance.save()
+    os.remove(input_file)
+    if input_file != result:
+        os.remove(result)
 
 
 def check_ffmpeg_is_installed() -> bool:

@@ -9,7 +9,7 @@ from io import BytesIO
 
 from django.utils.translation import gettext_lazy as _
 from .managers import *
-from .utils import get_upload_path
+from .utils import get_upload_path, compress
 
 
 class CustomUser(AbstractBaseUser):
@@ -48,12 +48,6 @@ class CustomUser(AbstractBaseUser):
         instance = super().from_db(db, field_names, values)
         instance._old_Avatar = instance.Avatar
         return instance
-
-    def save(self, *args, **kwargs):
-        if self.Avatar:
-            if hasattr(self, "_old_Avatar") and self._old_Avatar != self.Avatar:
-                self.Avatar = compress(self.Avatar)
-        super().save(*args, **kwargs)
 
     def delete(self, using=None, keep_parents=False):
         if self.Avatar:
@@ -100,12 +94,6 @@ class Room(models.Model):
         instance = super().from_db(db, field_names, values)
         instance._old_image = instance.image
         return instance
-
-    def save(self, *args, **kwargs):
-        if self.image:
-            if hasattr(self, "_old_image") and self._old_image != self.image:
-                self.image = compress(self.image)
-        super().save(*args, **kwargs)
 
     def delete(self, using=None, keep_parents=False):
         if self.image:
@@ -173,15 +161,27 @@ class Attachments(models.Model):
         return f"Attachment {self.id} for message {self.message.id}"
 
 
-def compress(image):
-
-    if os.path.exists(image.name):
-        return image
-
-    im = Image.open(image)
-    im_io = BytesIO()
-    im.save(im_io, format='PNG', quality=70)
-
-    new_image = ContentFile(im_io.getvalue(), name=image.name)
-    logger.debug(f"Image compressed: {image.name}")
-    return new_image
+# def compress(image):
+#
+#     if os.path.exists(image.path):
+#         return image
+#
+#     # im = Image.open(image)
+#     # im_io = BytesIO()
+#     # im.save(im_io, format='PNG', quality=70)
+#
+#     ffmpeg_command = [
+#                 'ffmpeg',
+#                 '-i', input_file,
+#                 '-vf', 'scale=640:480',
+#                 '-c:v', 'libx264',
+#                 '-crf', '23',
+#                 '-preset', 'medium',
+#                 '-c:a', 'copy',
+#                 result
+#             ]
+#     subprocess.run(ffmpeg_command)
+#
+#     new_image = ContentFile(im_io.getvalue(), name=image.name)
+#     logger.debug(f"Image compressed: {image.name}")
+#     return new_image
