@@ -19,7 +19,7 @@ def sort(value, sort_by: str):
     try:
         res = sorted(
             value,
-            key=lambda x: x["last_message"]["sent_at"] if x["last_message"]["room"] is not None else x["created_at"],
+            key=lambda x: "" if x["last_message"] is None else x["last_message"]["sent_at"] if x["last_message"]["room"] is not None else x["created_at"],
             reverse=True
         )
     except (KeyError, ValueError):
