@@ -101,13 +101,7 @@ class ChatConsumer(WebsocketConsumer):
         with open(os.path.join(settings.MEDIA_ROOT, "voice-message.wav"), "wb") as file:
             file.write(bytes_file)
             file_name = file.name
-        comp_file = compress_audio(input_file=file_name, instance=message)
-        with open(comp_file, 'rb') as compressed_file:
-            message.voice_file = File(compressed_file)
-            message.save()
-        os.remove(file_name)
-        os.remove(comp_file)
-
+        compress_audio(input_file=file_name, instance=message)
         self.send_message_to_all(message)
 
     def add_member(self, text_data_json) -> None:
