@@ -162,9 +162,15 @@ class Message(models.Model):
         ordering = ("sent_at", )
 
     def __str__(self):
-        return f'Message__({self.sender} - {self.room})'
         return f'{self.msg_type}-message from {self.sender} in {self.room} room'
 
+
+class Attachments(models.Model):
+    file = models.FileField(upload_to=get_upload_path)
+    message = models.ForeignKey(Message, related_name='attachments', on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"Attachment {self.id} for message {self.message.id}"
 
 
 def compress(image):
