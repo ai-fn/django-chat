@@ -125,9 +125,34 @@ class Folder(models.Model):
 
 
 class Message(models.Model):
+
+    class Type(models.TextChoices):
+        """ Message types """
+        TEXT = 'text', _("text")
+        VOICE = 'voice', _("voice")
+        # VIDEO = 'video', _("video")  # coming soon...
+
+        @classmethod
+        def from_old_name(cls, type_name: str) -> object:
+            """ Map old name to enum
+
+            Raises ValueError for invalid names.
+            """
+            name_map = {
+                "TEXT": cls.TEXT,
+                "VOICE": cls.VOICE,
+                # "VIDEO": cls.VIDEO,  # coming soon...
+            }
+            try:
+                return name_map[type_name]
+            except KeyError:
+                raise ValueError(f"Unknown type: {type_name}") from None
+
     sender = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='sender_message')
+    msg_type = models.CharField(choices=Type.choices, default=Type.TEXT, max_length=5)
     body = models.TextField(max_length=1600, null=True)
-    voice_file = models.FileField(null=True, upload_to=get_upload_voice_path)
+    voice_file = models.FileField(null=True, upload_to=get_upload_path)
+    video_file = models.FileField(null=True, upload_to=get_upload_path)
     sent_at = models.DateTimeField(auto_now_add=True, null=False)
     users_read = models.ManyToManyField(CustomUser, related_name='users_read')
     room = models.ForeignKey(Room, on_delete=models.CASCADE, related_name='room_message')
@@ -138,6 +163,8 @@ class Message(models.Model):
 
     def __str__(self):
         return f'Message__({self.sender} - {self.room})'
+        return f'{self.msg_type}-message from {self.sender} in {self.room} room'
+
 
 
 def compress(image):
