@@ -2,14 +2,15 @@
 Sample WebSocker chat app
 
 ## Main Features:
-- Changing profile。
-- Creating, deleting chat folders。
-- Creating, deleting chat rooms, adding members。
+- Chat with other users using text or audio messages。
 - Notifications for unread messages and unviewed friend requests。
 - Support full-text search on users, adding friends。
 - Support for executing periodic tasks with Celery and Celery beat。
 - Support for Redis message broker。
 - Delegating the return of static and media files to Nginx。
+- Changing profile。
+- Creating, deleting chat folders。
+- Creating, deleting chat rooms, adding members。
 
 ## Installation:
 Clone repos
