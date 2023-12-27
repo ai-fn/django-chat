@@ -1,9 +1,10 @@
 import { drawAudio } from "./audioVisualize.js";
 import { urlify } from "./utils.js";
+import { closeComposerEmbeded, showNotify } from "./contextmenu.js";
 import { editableMessageText, resetMsgArea, msgWrapper } from "./editMessage.js";
 
 let room;
-let user;
+export let user;
 let readMessages = [];
 let unreadMessages = [];
 let isScrolling = false
@@ -30,8 +31,6 @@ ws.onmessage = function (e) {
         case "connect":
             user = data.user
             room = data.room
-            if (room.type == 'direct' || room.name === 'Favorites' )
-                document.getElementById('add-member-btn').style.display = 'none'
             for (let mess of data.chat_messages){
                 mess.users_read.includes(user.user_id) ? readMessages.push(mess) : unreadMessages.push(mess);
                 messagesArray.push(mess);
@@ -57,9 +56,46 @@ ws.onmessage = function (e) {
             break;
         case "receive":
             getMesg(data.message, false, user.user_id == data.message.sender.user_id)
+            messagesArray.push(data.message);
             unreadMessages.push(data.message)
             markMessagesAsRead()
             scrollToBottom()
+            break;
+        case "edit-message":
+            let msg = document.getElementById(`message${data.message.id}`);
+            let innerContent = msg.getElementsByClassName("content-inner")[0];
+            let textContent = innerContent.getElementsByClassName("text-content")[0];
+            let messageMeta = msg.getElementsByClassName("MessageMeta")[0];
+            if (textContent != undefined){
+                textContent.innerHTML = data.message.body;
+            }
+            else{
+                innerContent.insertAdjacentHTML("beforeend", `<div class="text-content">${data.message.body}</div>`);
+            }
+            if (textContent.getElementsByClassName("MessageMeta")[0] == undefined){
+                textContent.appendChild(messageMeta);
+            }
+            let msgObj = messagesArray.find(msg => msg.id == data.message.id);
+            let msgIndex = messagesArray.indexOf(msgObj);
+            msgObj.body = data.message.body;
+            let messageTime = messageMeta.getElementsByClassName("message-time")[0];
+            messageTime.setAttribute('title', `Sent at ${data.message.sent_at}\n${data.message.edited ? "Edited at" + data.message.edited_at : ""}`)
+            messageTime.innerHTML = `${data.message.edited ? "edited" : ""} ${data.message.time}`
+            messagesArray[msgIndex] = msgObj;
+            closeComposerEmbeded();
+            break;
+        case "msg-deletion":
+            if (data.deleted){
+                let msg = document.getElementById(`message${data.msg_id}`);
+                let msgContainer = msg.closest(".message-container")
+                msg.classList.replace("open", "not-open")
+                if (msgContainer != null)
+                    setTimeout(() => {
+                        msg.classList.replace("shown", "not-shown")
+                        msgContainer.remove()
+                    }, 200);
+            }
+            showNotify(data.message);
             break;
         case "chat-notify":
             getChatNotify(data.message, extraClass='add-members')
@@ -140,32 +176,41 @@ function getChatNotify(msg, extraClass=""){
     )
 }
 function getMesg(msg, unread=false, sent=false) {
-    let sntClass = sent ? "snt-message" : "";
+    let sntClass = sent ? "own" : ""; 
     let sntMsgBody = sent ? "snt-message-body" : "";
     let readStatClass = unread ? "unread-message" : "";
+    
+    let metaHtml = `<span class="MessageMeta">
+                        <span class="message-time" title="Sent at ${msg.sent_at}\n${msg.edited ? "Edited at " + msg.edited_at : ""}">${msg.edited ? "edited" : ""} ${msg.time}</span>
+                    </span>`;
+
     msg.body = urlify(msg.body)
+    let textBodyHtml = `<div class="text-content">${msg.body}${metaHtml}</div>`;
 
     let msgHtml = `
-        <div class="message-container ${readStatClass} ${sntClass}">
-            <div class="message ${sntMsgBody}">
-                <div class="message-body ${msg.msg_type} ${msg.body != null ? "text" : "no-text"}" id="message${msg.id}" data-message-id="${msg.id}">
-                    <div class="snt-txt d-flex" style="align-items: center;">`
+        <div class="Message allow-selection message-container ${readStatClass} ${sntClass}" id="message${msg.id}" data-message-id="${msg.id}">
+            <div class="message-content-wrapper ${sntMsgBody} can-select-text">
+                <div class="message-content has-shadow has-solid-background ${msg.msg_type} ${msg.body != null ? "text" : "no-text"}" ${msg.voice_file != null ? "voice" : ""} has-shadow has-solid-background"  dir="auto">
+                    <div class="content-inner" dir="auto">`
 
     switch (msg.msg_type){
         case "text":
-            msgHtml += `<p class="text-message">${msg.body}</p></div>`
+            msgHtml += textBodyHtml;
             break;
         case "voice":
-            msgHtml += `<button class="d-flex" id='playBtn-${msg.id}' style="border-radius: 50%; width: 40px; height: 40px; align-items: center; justify-content: center;">
-                            <svg id='playSvg-${msg.id}' style='width: 40px;' xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="30" height="35" viewBox="0 0 1000 1000" xml:space="preserve"><rect x="0" y="0" width="100%" height="100%" fill="rgba(255,255,255,0)"/><g transform="matrix(0.9091 0 0 0.9091 500.0045 500.0045)" id="196351"><g style="" vector-effect="non-scaling-stroke"><g transform="matrix(1 0 0 1 -450 -450)"></g><g transform="matrix(9.0909 0 0 9.0909 -4.5426 -0.0005)" id="Layer_4_copy"><path style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; is-custom-font: none; font-file-url: none; fill: rgb(255,255,255); fill-rule: nonzero; opacity: 1;" vector-effect="non-scaling-stroke" transform=" translate(-49.5004, -50)" d="M 31.356 25.677 l 38.625 22.3 c 1.557 0.899 1.557 3.147 0 4.046 l -38.625 22.3 c -1.557 0.899 -3.504 -0.225 -3.504 -2.023 V 27.7 C 27.852 25.902 29.798 24.778 31.356 25.677 z" stroke-linecap="round"/></g><g transform="matrix(9.0909 0 0 9.0909 -2.6061 0.247)" id="Layer_4_copy"><path style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; is-custom-font: none; font-file-url: none; fill: rgb(255,255,255); fill-rule: nonzero; opacity: 1;" vector-effect="non-scaling-stroke" transform=" translate(-49.7134, -50.0272)" d="M 69.981 47.977 l -38.625 -22.3 c -0.233 -0.134 -0.474 -0.21 -0.716 -0.259 l 37.341 21.559 c 1.557 0.899 1.557 3.147 0 4.046 l -38.625 22.3 c -0.349 0.201 -0.716 0.288 -1.078 0.301 c 0.656 0.938 1.961 1.343 3.078 0.699 l 38.625 -22.3 C 71.538 51.124 71.538 48.876 69.981 47.977 z" stroke-linecap="round"/></g><g transform="matrix(9.0909 0 0 9.0909 -4.5426 -0.0005)" id="Layer_4_copy"><path style="stroke: rgb(255,255,255); stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 10; is-custom-font: none; font-file-url: none; fill: rgb(255,255,255); fill-rule: nonzero; opacity: 1;" vector-effect="non-scaling-stroke" transform=" translate(-49.5004, -50)" d="M 31.356 25.677 l 38.625 22.3 c 1.557 0.899 1.557 3.147 0 4.046 l -38.625 22.3 c -1.557 0.899 -3.504 -0.225 -3.504 -2.023 V 27.7 C 27.852 25.902 29.798 24.778 31.356 25.677 z" stroke-linecap="round"/></g></g></g></svg>
-                            <svg id='pauseSvg-${msg.id}' style='width: 40px; display: none;' xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="30" height="35" viewBox="0 0 1000 1000" xml:space="preserve"><rect x="0" y="0" width="100%" height="100%" fill="rgba(255,255,255,0)"/><g transform="matrix(0.9091 0 0 0.9091 500.0045 500.0045)" id="474746"><g style="" vector-effect="non-scaling-stroke"><g transform="matrix(1 0 0 1 -450 -450)"></g><g transform="matrix(9.0909 0 0 9.0909 -133.1959 0.1677)" id="Layer_7_copy"><path style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; is-custom-font: none; font-file-url: none; fill: rgb(255,255,255); fill-rule: nonzero; opacity: 1;" vector-effect="non-scaling-stroke" transform=" translate(-35.3485, -50.0185)" d="M 39.806 72.858 h -8.915 c -2.176 0 -3.94 -1.764 -3.94 -3.94 V 31.119 c 0 -2.176 1.764 -3.94 3.94 -3.94 h 8.915 c 2.176 0 3.94 1.764 3.94 3.94 v 37.799 C 43.746 71.094 41.982 72.858 39.806 72.858 z" stroke-linecap="round"/></g><g transform="matrix(9.0909 0 0 9.0909 124.1039 -0.1687)" id="Layer_7_copy"><path style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; is-custom-font: none; font-file-url: none; fill: rgb(255,255,255); fill-rule: nonzero; opacity: 1;" vector-effect="non-scaling-stroke" transform=" translate(-63.6515, -49.9815)" d="M 68.109 72.821 h -8.915 c -2.176 0 -3.94 -1.764 -3.94 -3.94 V 31.082 c 0 -2.176 1.764 -3.94 3.94 -3.94 h 8.915 c 2.176 0 3.94 1.764 3.94 3.94 v 37.799 C 72.049 71.057 70.285 72.821 68.109 72.821 z" stroke-linecap="round"/></g><g transform="matrix(9.0909 0 0 9.0909 -127.4822 0.4813)" id="Layer_7_copy"><path style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; is-custom-font: none; font-file-url: none; fill: rgb(255,255,255); fill-rule: nonzero; opacity: 1;" vector-effect="non-scaling-stroke" transform=" translate(-35.977, -50.053)" d="M 40.489 27.248 c 0.769 0.719 1.257 1.735 1.257 2.871 v 37.799 c 0 2.176 -1.764 3.94 -3.94 3.94 h -8.915 c -0.234 0 -0.46 -0.03 -0.683 -0.069 c 0.704 0.658 1.643 1.069 2.683 1.069 h 8.915 c 2.176 0 3.94 -1.764 3.94 -3.94 V 31.119 C 43.746 29.177 42.338 27.573 40.489 27.248 z" stroke-linecap="round"/></g><g transform="matrix(9.0909 0 0 9.0909 129.8175 0.145)" id="Layer_7_copy"><path style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; is-custom-font: none; font-file-url: none; fill: rgb(255,255,255); fill-rule: nonzero; opacity: 1;" vector-effect="non-scaling-stroke" transform=" translate(-64.28, -50.016)" d="M 68.792 27.211 c 0.769 0.719 1.257 1.735 1.257 2.871 v 37.799 c 0 2.176 -1.764 3.94 -3.94 3.94 h -8.915 c -0.234 0 -0.46 -0.03 -0.683 -0.069 c 0.704 0.658 1.643 1.069 2.683 1.069 h 8.915 c 2.176 0 3.94 -1.764 3.94 -3.94 V 31.082 C 72.049 29.14 70.641 27.535 68.792 27.211 z" stroke-linecap="round"/></g><g transform="matrix(9.0909 0 0 9.0909 -133.1959 0.1677)" id="Layer_7_copy"><path style="stroke: rgb(255,255,255); stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 10; is-custom-font: none; font-file-url: none; fill: rgb(255,255,255); fill-rule: nonzero; opacity: 1;" vector-effect="non-scaling-stroke" transform=" translate(-35.3485, -50.0185)" d="M 39.806 72.858 h -8.915 c -2.176 0 -3.94 -1.764 -3.94 -3.94 V 31.119 c 0 -2.176 1.764 -3.94 3.94 -3.94 h 8.915 c 2.176 0 3.94 1.764 3.94 3.94 v 37.799 C 43.746 71.094 41.982 72.858 39.806 72.858 z" stroke-linecap="round"/></g><g transform="matrix(9.0909 0 0 9.0909 124.1039 -0.1687)" id="Layer_7_copy"><path style="stroke: rgb(255,255,255); stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 10; is-custom-font: none; font-file-url: none; fill: rgb(255,255,255); fill-rule: nonzero; opacity: 1;" vector-effect="non-scaling-stroke" transform=" translate(-63.6515, -49.9815)" d="M 68.109 72.821 h -8.915 c -2.176 0 -3.94 -1.764 -3.94 -3.94 V 31.082 c 0 -2.176 1.764 -3.94 3.94 -3.94 h 8.915 c 2.176 0 3.94 1.764 3.94 3.94 v 37.799 C 72.049 71.057 70.285 72.821 68.109 72.821 z" stroke-linecap="round"/></g></g></g></svg>
-                        </button>
-                        <div id='canvas-${msg.id}' style="width: 10rem;"></div>`;
+            msgHtml += `<div class="Audio inline ${sntClass}">
+                            <button class="Button smaller primary round" id='playBtn-${msg.id}' type="button">
+                                <i id='playSvg-${msg.id}' class="icon small-icon opacity-transition shown fa-solid fa-play"></i>
+                                <i id='pauseSvg-${msg.id}' class="icon small-icon fa-solid opacity-transition not-shown fa-pause"></i>
+                            </button>
+                            <div id='canvas-${msg.id}' style="width: 10rem;"></div>
+                        </div>
+                        ${msg.body != null ? textBodyHtml : ""}`;
             break;
     }
 
     msgHtml += `</div>
-                <div class="snt-time d-flex"><p title="${msg.sent_at}">${msg.time}</p></div>
+                ${msg.body == null ? metaHtml : ""}
                 </div>
             </div>
         </div>`
@@ -189,7 +234,7 @@ export function send() {
     
     msg.length > maxMsgLength ? splitSend(msg) : sendMsg(msg);
     editableMessageText.innerText = '';
-    resetMsgArea();
+    resetMsgArea(editableMessageText);
     msgWrapper.style.height = "2.5rem";
     messages.scrollTo(0, messages.scrollHeight, 'smooth');
 }
