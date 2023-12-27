@@ -60,11 +60,12 @@
             </div>
             <div class="modal-footer">
                 {% if room.type == 'chat' %}
-                    <form method="post" action="{% url 'leave-room' %}" style="width: 100%;">
+                    <form method="post" action="{% url 'leave-room' %}" style="width: 30%;">
                         {% csrf_token %}
                             <input type="hidden" name="room-id" id="room-id" value="{{ room.id }}">
-                        <button class="nav-link btn btn-danger" type="submit" style="color: gray; border: #6666 1px solid; width: 40%;">Leave room</button>
+                        <button class="nav-link btn btn-danger" type="submit" style="color: gray; border: #6666 1px solid; width: 100%;">Leave room</button>
                     </form>
+                    <button class="nav-link btn btn-success" id="add-member-btn" style="color: gray; border: #6666 1px solid; width: 50%;" data-bs-toggle="modal" data-bs-target="#addMemberModal">Add members</button>
                 {% endif %}
             </div>
           </div>
@@ -75,17 +76,34 @@
     {% block header %}
         {% include 'index/header.html' %}
     {% endblock %}
-
+    
+    {% block styles %}
+        <link rel="stylesheet" type="text/css" href="{% static 'css/Users.css' %}">
+        <link rel="stylesheet" type="text/css" href="{% static 'css/Rooms.css' %}">
+        <link rel="stylesheet" type="text/css" href="{% static 'css/Audio.css' %}">
+        <link rel="stylesheet" type="text/css" href="{% static 'css/AttachMenu.css' %}">
+        <link rel="stylesheet" type="text/css" href="{% static 'css/Composer.css' %}">
+        <link rel="stylesheet" type="text/css" href="{% static 'css/ContextMenu.css' %}">
+        <link rel="stylesheet" type="text/css" href="{% static 'css/Footer.css' %}">
+        <link rel="stylesheet" type="text/css" href="{% static 'css/Menu.css' %}">
+        <link rel="stylesheet" type="text/css" href="{% static 'css/DropdownMenu.css' %}">
+        <link rel="stylesheet" type="text/css" href="{% static 'css/MenuItem.css' %}">
+        <link rel="stylesheet" type="text/css" href="{% static 'css/message-content.css' %}">
+        <link rel="stylesheet" type="text/css" href="{% static 'css/Message.css' %}">
+        <link rel="stylesheet" type="text/css" href="{% static 'css/MessageMeta.css' %}">
+        <link rel="stylesheet" type="text/css" href="{% static 'css/Notification.css' %}">
+        <link rel="stylesheet" type="text/css" href="{% static 'css/EmbededMessage.css' %}">
+        <link rel="stylesheet" type="text/css" href="{% static 'css/ComposerEmbededMessage.css' %}">
+        <link rel="stylesheet" type="text/css" href="{% static 'css/Modal.css' %}">
+        <link rel="stylesheet" type="text/css" href="{% static 'css/AttachmentModal.css' %}">
+    {% endblock %}
 
     {% block content %}
         {% include 'index/room-header.html' with room=room %}
-            <div class="main-container">
+            <div class="main-container d-flex">
                 <div id="messages"></div>
+                {% include 'index/footer.html' %}
             </div>
-    {% endblock %}
-
-    {% block footer %}
-        {% include 'index/footer.html' %}
     {% endblock %}
 
 {% block scripts %}
@@ -103,5 +121,7 @@
     <script type="module" src="{% static 'js/undoManager.js' %}"></script>
     <script type="module" src="{% static 'js/footer.js' %}"></script>
     <script type="module" src="{% static 'js/contextmenu.js' %}"></script>
+    <script type="module" src="{% static 'js/attachModal.js' %}"></script>
     <script src="{% static 'js/audioRecorder.js' %}"></script>
+    <script src="{% static 'js/base.js' %}"></script>
 {% endblock %}

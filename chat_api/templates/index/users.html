@@ -1,7 +1,13 @@
 {% extends 'index/base.html' %}
+{% load static %}
 
 {% block header %}
-{% include 'index/header.html' %}
+    {% include 'index/header.html' %}
+{% endblock %}
+
+{% block styles %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/Users.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/Rooms.css' %}">
 {% endblock %}
 
 

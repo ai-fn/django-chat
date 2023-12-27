@@ -8,10 +8,18 @@
         {% for room in rooms|sort:'' %}
             <div class="room-container">
                 <div class="room">
-                    <a href="{% url 'chat' room.id %}">
+                    {% if room.type == 'chat' or room.name == 'Favorites' %}
+                        <a href="{% url 'chat' room.id %}">
+                    {% else %}
+                        <a href="{% url 'direct' room.id %}">
+                    {% endif %}
                         <div class="avatar small" style="background-image: url({{ room.image }});"></div>
                     </a>
-                    <a class="room-main-block" href="{% url 'chat' room.id %}">
+                    {% if room.type == 'chat' or room.name == 'Favorites' %}
+                        <a class="room-main-block" href="{% url 'chat' room.id %}">
+                    {% else %}
+                        <a class="room-main-block" href="{% url 'direct' room.id %}">
+                    {% endif %}
                         <div>
                             <div class="room-name d-flex" style="justify-content: space-between;">
                                 <span><strong>{{room.name}}</strong></span>
@@ -40,19 +48,25 @@
                     </a>
                     <div class="btn-group dropend">
                         <button style="background-color: transparent;" id="outerDropdown" class="dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                            <img src="{% static 'menu.png' %}" alt="menu" style="width: 10px;">
+                            <i class="small-icon fa-solid fa-ellipsis-vertical"></i>
                         </button>
-                        <ul class="dropdown-menu text-bg-dark" aria-labelledby="outerDropdown">
-                            {% for folder in folders %}
-                            <li>
-                                <form action="{% url 'add-room-to-folder' %}" method="post">
-                                    {% csrf_token %}
-                                    <input type="hidden" name="folder-id" id="folder-id" value="{{ folder.id }}">
-                                    <input type="hidden" name="room-id" id="room-id" value="{{ room.id }}">
-                                    <button type="submit" class="nav-link btn btn-success">Add to {{ folder.name }}</button>
-                                </form>
-                            </li>
-                            {% endfor %}
+                        <ul class="dropdown-menu text-bg-dark" aria-labelledby="outerDropdown" style="padding: 5px;">
+                            {% if folders %}
+                                {% for folder in folders %}
+                                <li>
+                                    <form action="{% url 'add-room-to-folder' %}" method="post">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="folder-id" id="folder-id" value="{{ folder.id }}">
+                                        <input type="hidden" name="room-id" id="room-id" value="{{ room.id }}">
+                                        <button type="submit" class="nav-link btn btn-success">Add to {{ folder.name }}</button>
+                                    </form>
+                                </li>
+                                {% endfor %}
+                            {% else %}
+                                <li>
+                                    <a class="nav-link btn btn-success" data-bs-toggle="modal" data-bs-target="#addFolderModal" type="button" role="tab">Add folder</a>
+                                </li>
+                            {% endif %}
                             {% if rm_rooms %}
                                 <li>
                                     <form action="{% url 'remove-room-from-folder' %}" method="post">

@@ -7,6 +7,10 @@
     {% include 'index/header.html' %}
 {% endblock %}
 
+{% block styles %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/Users.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/Rooms.css' %}">
+{% endblock %}
 
 {% block modal %}
 <!-- Modal for create room -->
@@ -71,9 +75,11 @@
     <div class="folders d-flex">
         {% include 'index/folders.html' with folders=folders %}
         <div class="create-room">
-            <span class='gray'>No rooms yet?</span>
+            <span style="color: gray;">No rooms yet?</span>
             <a class="create-room-btn" type="button" data-bs-toggle="modal" data-bs-target="#createRoomModal" title="Create room">Create room</a>
-            <a data-bs-toggle="modal" title="New message" data-bs-target="#newDirectModal"><img src="{% static 'new_direct.png' %}" alt=""></a>
+            <a data-bs-toggle="modal" title="New direct" data-bs-target="#newDirectModal">
+                <i class="big-icon fa-regular fa-comment-dots"></i>
+            </a>
         </div>
     </div>
 

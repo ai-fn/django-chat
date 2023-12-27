@@ -15,10 +15,10 @@
                     <form action="{% url 'direct' %}" method="post">
                         {% csrf_token %}
                         <input type="hidden" name="user_id" id="user_id" value="{{ usr.user_id }}">
-                        <button class="btn btn-success" style="height: 3rem; width: 100%;">Send message</button>
+                        <button class="btn btn-success" style="height: 3rem; width: 100%;"><span>Send message</span></button>
                     </form>
                 {% elif usr.user_id in request_sent_for %}
-                    <span class="btn btn-success">Request sent</span>
+                    <span class="btn btn-success"><span>Request sent</span></span>
                 {% else %}
                     <a href="{% url 'friend_requests:send' usr.user_id %}" class="btn btn-secondary">
                         <span>Add friend</span>
