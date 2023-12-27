@@ -144,6 +144,9 @@ class Message(models.Model):
     sent_at = models.DateTimeField(auto_now_add=True, null=False)
     users_read = models.ManyToManyField(CustomUser, related_name='users_read')
     room = models.ForeignKey(Room, on_delete=models.CASCADE, related_name='room_message')
+    pinned = models.BooleanField(default=False, null=False)
+    edited = models.BooleanField(default=False, null=False)
+    edited_at = models.DateTimeField(null=True)
     objects = MessageManager()
 
     class Meta:
@@ -158,30 +161,4 @@ class Attachments(models.Model):
     message = models.ForeignKey(Message, related_name='attachments', on_delete=models.CASCADE)
 
     def __str__(self):
-        return f"Attachment {self.id} for message {self.message.id}"
-
-
-# def compress(image):
-#
-#     if os.path.exists(image.path):
-#         return image
-#
-#     # im = Image.open(image)
-#     # im_io = BytesIO()
-#     # im.save(im_io, format='PNG', quality=70)
-#
-#     ffmpeg_command = [
-#                 'ffmpeg',
-#                 '-i', input_file,
-#                 '-vf', 'scale=640:480',
-#                 '-c:v', 'libx264',
-#                 '-crf', '23',
-#                 '-preset', 'medium',
-#                 '-c:a', 'copy',
-#                 result
-#             ]
-#     subprocess.run(ffmpeg_command)
-#
-#     new_image = ContentFile(im_io.getvalue(), name=image.name)
-#     logger.debug(f"Image compressed: {image.name}")
-#     return new_image
+        return f"Attachment {self.id} for message {self.message_id}"

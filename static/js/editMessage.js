@@ -2,42 +2,63 @@ import { urlify } from "./utils.js";
 import { send } from "./websocket.js";
 import { undoManager } from "./undoManager.js";
 import { ws } from "./websocket.js";
+import { selectMessage, showNotify } from "./contextmenu.js";
 
-const sendMsgBtn = document.getElementById('inp-send-msg');
-const voiceRec = document.getElementById('voice-rec');
-const msgSend = document.getElementById('msg-send');
+export const sendMsgBtn = document.getElementById('inp-send-msg');
 export const editableMessageText = document.getElementById('editable-message-text');
-export const msgWrapper = editableMessageText.parentElement.parentElement;
+export const msgWrapper = editableMessageText;
 
-sendMsgBtn.onclick = function () { send(); resetMsgArea(); };
+sendMsgBtn.onclick = function () {
+    switch (sendMsgBtn.classList.item(1)){
+        case "edit":
+            if (selectMessage != null){
+                if (selectMessage.body != editableMessageText.innerText){
+                    ws.send(JSON.stringify({
+                        action: "edit-message",
+                        messageId: selectMessage.id,
+                        messageBody: editableMessageText.innerText
+                    }))
+                }
+            } else {showNotify("Message not selected");}
+            break;
+        default:
+            send(); resetMsgArea(editableMessageText);
+            break;
+    }
+};
 
-editableMessageText.onpaste = function (event) {
+editableMessageText.onpaste = onPaste;
+editableMessageText.onkeydown = onKeyDown;
+editableMessageText.oninput = onInput;
+
+export function onPaste (event) {
     event.preventDefault();
     let clipboardData = event.clipboardData || window.clipboardData;
     let pastedText = clipboardData.getData('text/plain');
-    editableMessageText.innerText += pastedText;
+    event.target.innerText += pastedText;
     
-    updateWrapperSize();
-    setCursorPos(editableMessageText);
+    resetMsgArea(event.target);
+    updateWrapperSize(event.target);
+    setCursorPos(event.target);
 };
 
-editableMessageText.oninput = function (e) {
-    if ((e.inputType.includes("delete")) && editableMessageText.innerText.trim().length == 0){
-        editableMessageText.innerHTML = "";
-        resetMsgArea();
+export function onInput (e) {
+    if ((e.inputType.includes("delete")) && e.target.innerText.trim().length == 0){
+        e.target.innerHTML = "";
+        resetMsgArea(e.target);
         return;
     }
 
-    const previousValue = urlify(editableMessageText.innerText);
+    const previousValue = urlify(e.target.innerText);
 
     const action = {
         execute: function() {
-            editableMessageText.innerHTML = previousValue;
-            resetMsgArea();
+            e.target.innerHTML = previousValue;
+            resetMsgArea(e.target);
         },
         undo: function() {
-            editableMessageText.innerHTML = previousValue;
-            resetMsgArea();
+            e.target.innerHTML = previousValue;
+            resetMsgArea(e.target);
         }
     };
     
@@ -46,8 +67,8 @@ editableMessageText.oninput = function (e) {
         action.execute();
     }
     
-    resetMsgArea();
-    updateWrapperSize();
+    resetMsgArea(e.target);
+    updateWrapperSize(e.target);
 };
 
 function setCursorPos(element) {
@@ -60,33 +81,30 @@ function setCursorPos(element) {
     sel.addRange(range);
 }
 
-export function resetMsgArea() {
-    setCursorPos(editableMessageText);
-    if (editableMessageText.innerHTML.length == 0) {
-        editableMessageText.classList.remove('touched');
-        msgWrapper.style.height = "2.5rem";
-        sendMsgBtn.classList.add('recording');
-        voiceRec.classList.add('shown');
-        msgSend.classList.remove('shown');
-        msgWrapper.classList.remove('overflown');
+export function resetMsgArea(e) {
+    setCursorPos(e);
+    if (document.getElementsByClassName("ComposerEmbeddedMessage").length == 0)
+        e.innerHTML.length == 0 ? sendMsgBtn.classList.replace(sendMsgBtn.classList.item(1), 'recording') : sendMsgBtn.classList.replace(sendMsgBtn.classList.item(1), 'send');
+    if (e.innerHTML.length == 0) {
+        e.classList.remove('touched');
+        e.parentElement.parentElement.style.height = "2.5rem";
+        e.parentElement.parentElement.classList.remove('overflown');
         return;
     }
-    editableMessageText.classList.add('touched');
-    sendMsgBtn.classList.remove('recording');
-    voiceRec.classList.remove('shown');
-    msgSend.classList.add('shown');
+    e.classList.add('touched');
 }
 
-function updateWrapperSize() {
-    if (editableMessageText.scrollHeight < 450)
-        msgWrapper.style.height = editableMessageText.scrollHeight + 'px';
-    else{
-        msgWrapper.classList.add('overflown');
-        msgWrapper.style.height = "450px";
+function updateWrapperSize(e) {
+    let maxScrollHeight = e.id == "editable-message-text" ? 450 : 210;
+    if (e.scrollHeight < maxScrollHeight)
+        e.parentElement.parentElement.style.height = e.scrollHeight + 'px';
+    else {
+        e.parentElement.parentElement.classList.add('overflown');
+        e.parentElement.parentElement.style.height = `${maxScrollHeight}px`;
     }
 }
 
-editableMessageText.onkeydown = function (e) {
+export function onKeyDown (e) {
     if (e.key === "Enter" && !e.shiftKey) {
         e.preventDefault();
         sendMsgBtn.click();
