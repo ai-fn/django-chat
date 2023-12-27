@@ -21,7 +21,7 @@ COPY . /app/
 # Run the application.
 CMD python manage.py makemigrations \
     && python manage.py migrate \
-    && python manage.py shell -c "from django.contrib.auth import get_user_model; User = get_user_model(); User.objects.filter(username='root').exists() or User.objects.create_superuser(username='root', email='root@example.com', password='root')" \
+    && python manage.py shell -c "from django.contrib.auth import get_user_model; User = get_user_model(); User.objects.filter(username='root').exists() or User.objects.create_superuser(username='root', email='root@example.com', password='root', is_email_confirmed=True)" \
     && python manage.py collectstatic --no-input \
     && python manage.py createcachetable \
     && daphne chat.asgi:application --bind 0.0.0.0 --port 8000
