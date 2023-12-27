@@ -74,8 +74,7 @@ class LoginView(APIView):
                 messages.warning(request, _("Email or password incorrect"))
                 logger.info("User with email %s is not found" % email)
                 return redirect('login')
-        messages.warning(request, _("Incorrect credential, try again"))
-        logger.info("Got an invalid login form")
+        show_errors(request, form)
         return redirect('login')
 
 
@@ -256,7 +255,7 @@ class CreateRoom(APIView):
                 compress(new_room.image.path, new_room)
             new_room.members.add(user)
         else:
-            logger.debug("Got an invalid form from %s" % request.user)
+            show_errors(request, form)
             return redirect('chats')
 
         logger.info("Room %s has been create by %s", new_room, user)
