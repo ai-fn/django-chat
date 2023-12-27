@@ -1,0 +1,31 @@
+.Message.own .has-solid-background .MessageMeta {
+    color: var(--color-message-meta-own);
+}
+.Message>.message-content-wrapper {
+    opacity: 1;
+    transform: scale(1) translateX(0);
+    transition: transform var(--select-transition);
+}
+.Message.was-edited {
+    --meta-safe-area-extra-width: 2.5rem;
+}
+.message-container {
+    opacity: 1;
+    transform: scale(1) translateX(0);
+    display: flex;
+    flex-wrap: wrap;
+    border-radius: 1rem;
+    padding: 5px 0px;
+    transition: background-color 150ms cubic-bezier(0.2, 0, 0.2, 1), transform .15s;
+}
+.unread-message {
+    background-color: #303132 !important;
+}
+.snt-message {
+    justify-content: flex-end;
+}
+.message-body {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}

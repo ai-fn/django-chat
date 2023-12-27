@@ -1,0 +1,57 @@
+.MenuItem.compact {
+    font-size: .875rem;
+    margin: 0.125rem 0.25rem;
+    padding: 0.25rem;
+    border-radius: 0.375rem;
+    width: auto;
+    font-weight: 500;
+    transform: scale(1);
+    transition: .15s ease-in-out transform;
+}
+.MenuItem {
+    width: 100%;
+    background: none;
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    position: relative;
+    overflow: hidden;
+    line-height: 1.5rem;
+    white-space: nowrap;
+    color: rgb(255,255,255);
+    --ripple-color: rgba(0, 0, 0, 0.08);
+    cursor: var(--custom-cursor, pointer);
+    unicode-bidi: plaintext;
+}
+.MenuItem.compact . {
+    max-width: 1.25rem;
+    font-size: 1.25rem;
+    margin-left: 0.5rem;
+    margin-right: 1.25rem;
+}
+.MenuItem .icon {
+    font-size: 1.5rem;
+    margin-right: 2rem;
+    color: var(--color-icon-secondary, inherit);
+}
+.MenuItem.compact .icon {
+    max-width: 1.25rem;
+    font-size: 1.25rem;
+    margin-left: 0.5rem;
+    margin-right: 1.25rem;
+}
+@media (hover: hover){
+    .MenuItem.compact:hover, .MenuItem.compact:focus, .MenuItem.compact:active {
+        background: var(--color-background-compact-menu-hover, rgba(0,0,0,0.4));
+        text-decoration: none;
+    }
+}
+.MenuItem.destructive {
+    color: #e53935;
+}
+.MenuItem.compact .icon::before {
+    max-width: 1.25rem;
+}

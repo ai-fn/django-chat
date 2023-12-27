@@ -1,0 +1,25 @@
+.Notification-container {
+    position: absolute;
+    top: 5rem;
+    left: 40%;
+    width: 22rem;
+    max-width: 100vw;
+    margin: 4.25rem auto 0.25rem;
+    z-index: var(--z-notification);
+}
+.Notification {
+    display: flex;
+    background: rgba(51, 51, 51, .8) url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGcgZmlsbD0ibm9uZSIgZmlsbC1ydWxlPSJldmVub2RkIj48Y2lyY2xlIGZpbGw9IiNGRkYiIGN4PSIxMiIgY3k9IjEyIiByPSIxMiIvPjxjaXJjbGUgZmlsbD0iIzAwMCIgZmlsbC1ydWxlPSJub256ZXJvIiBjeD0iMTIiIGN5PSI2LjUiIHI9IjEuNSIvPjxwYXRoIGQ9Ik0xMiA5LjVjLS41NTIgMC0xIC4zNy0xIC44MjZ2Ny4zNDhjMCAuNDU2LjQ0OC44MjYgMSAuODI2czEtLjM3IDEtLjgyNnYtNy4zNDhjMC0uNDU2LS40NDgtLjgyNi0xLS44MjZ6IiBmaWxsPSIjMDAwIiBmaWxsLXJ1bGU9Im5vbnplcm8iLz48L2c+PC9zdmc+) no-repeat 0.9375rem 50%;
+    background-size: 1.5rem;
+    border-radius: var(--border-radius-default, .7rem);
+    padding: 0.9375rem 0.9375rem 0.9375rem 3.375rem;
+    color: #fff;
+    margin: 0 0.5rem;
+    align-items: center;
+}
+.Notification .content {
+    line-height: 1.25;
+    word-break: break-word;
+    font-size: .9375rem;
+    flex-grow: 1;
+}

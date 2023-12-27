@@ -1,0 +1,18 @@
+.AttachMenu--menu .bubble {
+    max-height: 20rem;
+    overflow: auto;
+}
+.AttachMenu--menu {
+    position: relative;
+    top: -3.5rem;
+}
+.AttachMenu {
+    align-self: flex-end;
+}
+.AttachMenu--menu>.backdrop {
+    position: absolute;
+    top: 0;
+    left: auto;
+    right: 0;
+    width: 3.5rem;
+}

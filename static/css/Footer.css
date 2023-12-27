@@ -1,0 +1,32 @@
+.foot-main-container {
+    max-width: 850px;
+    margin: auto;
+    padding: 0 30px;
+}
+.footer {
+    z-index: 998;
+    width: 100%;
+    bottom: 0;
+    right: 0px;
+    min-height: 4%;
+    position: relative;
+}
+#inp-send-msg:hover {
+    background-color: var(--color-primary, rgb(135,116,225));
+    color: #fff;
+}
+#inp-send-msg i {
+    display: none;
+}
+#inp-send-msg.recording .fa-microphone{
+    opacity: 1;
+    display: block;
+}
+#inp-send-msg.edit .fa-check{
+    opacity: 1;
+    display: block;
+}
+#inp-send-msg.send .fa-paper-plane{
+    opacity: 1;
+    display: block;
+}
