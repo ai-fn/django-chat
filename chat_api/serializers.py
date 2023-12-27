@@ -19,10 +19,19 @@ class UserSerialize(serializers.ModelSerializer):
         exclude = ['password', ]
 
 
+class AttachmentsSerialize(serializers.ModelSerializer):
+    class Meta:
+        model = Attachments
+        exclude = []
+
+
 class MessageSerialize(serializers.ModelSerializer):
     sender = UserSerialize()
     created_at_formatted = serializers.SerializerMethodField()
+    sent_at = serializers.SerializerMethodField()
+    edited_at = serializers.SerializerMethodField()
     time = serializers.SerializerMethodField()
+    attachments = AttachmentsSerialize(many=True, read_only=True)
 
     class Meta:
         model = Message
@@ -33,6 +42,15 @@ class MessageSerialize(serializers.ModelSerializer):
         if (dt.now(obj.sent_at.tzinfo) - obj.sent_at).days > 0:
             return obj.sent_at.strftime("%d.%m")
         return obj.sent_at.strftime("%H:%M")
+
+    @staticmethod
+    def get_sent_at(obj: Message):
+        return obj.sent_at.strftime("%b %d, %Y, %H:%M:%S")
+
+    @staticmethod
+    def get_edited_at(obj: Message):
+        if obj.edited_at is not None:
+            return obj.edited_at.strftime("%b %d, %Y, %H:%M:%S")
 
     @staticmethod
     def get_time(obj: Message):
@@ -56,7 +74,7 @@ class RoomSerialize(serializers.ModelSerializer):
         req = self.context.get('request')
         if req:
             if obj.type == 'direct' and obj.name != 'Favorites':
-                res = settings.MEDIA_URL + str(obj.members.filter(~Q(pk=req.user.pk))[0].Avatar)
+                res = settings.MEDIA_URL + str(obj.members.exclude(pk=req.user.pk)[0].Avatar)
                 return res
         return settings.MEDIA_URL + str(obj.image)
 
@@ -65,7 +83,7 @@ class RoomSerialize(serializers.ModelSerializer):
         if req:
             if obj.type == 'direct':
                 try:
-                    usr = obj.members.filter(~Q(pk=req.user.pk))[0]
+                    usr = obj.members.exclude(pk=req.user.pk)[0]
                     name = f"{usr.First_Name} {usr.Second_Name}"
                 except IndexError:
                     name = obj.name
@@ -93,3 +111,5 @@ class FolderSerialize(serializers.ModelSerializer):
     class Meta:
         model = Folder
         exclude = []
+
+
