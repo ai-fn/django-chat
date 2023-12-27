@@ -63,6 +63,7 @@ services:
 
   redis:
     image: redis:7.2.2-alpine
+    container_name: redis-container
     ports:
       - "6379:6379"
     networks:
@@ -72,6 +73,7 @@ services:
     build:
       context: .
     command: celery -A chat worker --loglevel=info
+    container_name: celery-container
     depends_on:
       - redis
       - db
@@ -85,6 +87,7 @@ services:
   celery-beat:
     build:
       context: .
+    container_name: celery-beat-container
     command: celery -A chat beat --loglevel=info
     depends_on:
       - redis
