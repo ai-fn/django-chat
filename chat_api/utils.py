@@ -41,7 +41,7 @@ def compress(input_file: str, instance) -> None:
     if check_ffmpeg_is_installed():
 
         name, ext = os.path.splitext(input_file)
-        result = f"{name}_comp{ext}"
+        result = f"{name}_comp.jpg"
         ffmpeg_command = [
                 "ffmpeg",
                 "-i", input_file,

@@ -37,8 +37,8 @@ export function drawAudio(audiofile_path, canvas_id) {
         button.onclick = () => wavesurfer.playPause();
 
         wavesurfer.on('play', () => {
-            play.style.display = 'none';
-            pause.style.display = 'block';
+            play.classList.replace('shown', 'not-shown');
+            pause.classList.replace('not-shown', 'shown');
             if (playedWaveserfers.length > 0) {
                 playedWaveserfers.forEach((el) => {
                     if (el.wavesurfer != wavesurfer){
@@ -50,8 +50,8 @@ export function drawAudio(audiofile_path, canvas_id) {
             playedWaveserfers.push(ws);
         })
         wavesurfer.on('pause', () => {
-            play.style.display = 'block';
-            pause.style.display = 'none';
+            play.classList.replace('not-shown', 'shown');
+            pause.classList.replace('shown', 'not-shown');
         })
     })
     wavesurfer.on('interaction', () => {

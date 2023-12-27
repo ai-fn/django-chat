@@ -31,7 +31,6 @@ def index(request):
 
 
 def show_errors(request, form) -> None:
-    print(type(form), type(request))
     errors_json = form.errors.as_json()
     errors_dict = json.loads(errors_json)
 
@@ -209,17 +208,21 @@ class DirectView(APIView):
     """Show or create direct room endpoint"""
     permission_classes = [IsAuthenticated, ]
 
-    @staticmethod
-    def post(request):
+    def post(self, request):
         user = CustomUser.objects.get(pk=request.data.get('user_id'))
         try:
             room = Room.objects.annotate(count=Count('members')).filter(
                 members=user.pk, count=2, type=Room.Type.DIRECT
             ).filter(members=request.user.pk)[0]
-        except Room.DoesNotExist:
+        except IndexError:
             room = Room.objects.create(name="Direct with %s" % user.username, type=Room.Type.DIRECT)
             logger.info("Room %s created by %s", room, request.user)
             room.members.add(user.user_id, request.user.user_id)
+        return redirect('direct', room_id=room.id)
+
+    def get(self, request, room_id: int):
+        room = Room.objects.get(pk=room_id)
+        user = room.members.exclude(pk=request.user.user_id)[0]
         chat_messages = MessageSerialize(Message.objects.filter(room=room.pk), many=True).data
         users = UserSerialize(user.Friends, many=True).data
         context = {

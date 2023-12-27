@@ -77,7 +77,8 @@ class CreateRoomForm(forms.Form):
     )
     room_img = forms.ImageField(
         label='',
-        widget=forms.FileInput(attrs={'id': 'imgInput', 'class': 'form-control', 'accept': 'image/*'})
+        widget=forms.FileInput(attrs={'id': 'imgInput', 'class': 'form-control', 'accept': 'image/*'}),
+        required=False
     )
 
 

@@ -1,3 +1,3 @@
-const mbrModal = document.getElementById('add-member-btn')
+const addMemberBtn = document.getElementById('add-member-btn')
     if (!location.href.split("/").includes("chat"))
-        mbrModal.style.display = 'none';
+        addMemberBtn.style.display = 'none';

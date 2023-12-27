@@ -1,129 +1,57 @@
-a {
-            text-decoration: none;
-            color: white;
-        }
-        .room {
-            padding: 5px 2px;
-            border-radius: 10px;
-            background-color: rgb(45, 45, 56);
-            display: flex;
-            max-height: 70px;
-            flex-direction: row;
-            align-items: center;
-        }
-        .room-image {
-            height: 60px;
-            width: 60px;
-            border-radius: 50%;
-            margin: 10px;
-        }
-        .another-in-header {
-            display: flex;
-            justify-content: flex-end;
-            width: 100%;
-        }
-        .logout {
-            min-width: 100px;
-        }
-        #logout-inp:hover {
-            color: #212025ff;
-            cursor: pointer;
-            transition: .3s ease-in;
-        }
-        button {
-            color: white;
-            background-color: #7896fdff;
-            width: 100%;
-            min-height: 40px;
-            border: 0px black;
-            border-radius: 20px;
-            box-shadow: black 0px;
-        }
-        button:hover {
-            color: #212025ff;
-            cursor: pointer;
-            transition: .3s ease-in;
-        }
-        .create-room-btn {
-            margin: 0px 10px;
-            min-height: 30px;
-            min-width: 30px;
-            width: 120px;
-        }
-        #create-room-sp {
-            color: gray;
-        }
-        .create-room{
-            display: flex;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-        #logout-inp {
-            color: white;
-            background-color: #7896fdff;
-            width: 100%;
-            min-height: 40px;
-            border: 0px black;
-            border-radius: 20px;
-            box-shadow: black 0px;
-        }
-        body {
-            color: white;
-            font-family: sans-serif;
-            margin: 0px;
-            background-color: #212025ff;
-        }
-        .in-header {
-            display: flex;
-            padding: 1rem 2rem 0.5rem;
-            align-items: center;
-        }
-        .header {
-            width: 100%;
-            position: fixed;
-            box-shadow: rgba(0, 0, 0, 0.4) 0px 0px 8px;
-            display: flex;
-            flex-direction: column;
-            background-color: #212025ff;
-            padding-bottom: 0.75rem;
-        }
-        .logo {
-            height: 32px;
-            width: 110px;
-        }
-        .user-name {
-            width: 100%;
-            margin-left: 100px;
-            font-size: 20px;
-        }
-        .container {
-            display: block;
-            padding-top: 6rem;
-            min-height: 10vh;
-            flex-direction: column;
-            align-items: center;
-        }
-        .main-container {
-            margin: 0px auto;
-            max-width: 850px;
-            padding-top: 10px;
-        }
-        .room-main-block{
-            display: flex;
-            width: 80%;
-            height: 70px;
-            flex-direction: column;
-            justify-content: flex-start;
-        }
-        .room-container {
-            margin: 5px;
-        }
-        .room-name{
-            font-size: 14px;
-            padding: 5px 0px;
-        }
-        .prev-last-msg {
-            display: flex;
-            font-size: 14px;
-            justify-content: space-between;
-        }
+.room-container, .user-container {
+    padding: 5px 0;
+    height: 70px;
+    border-bottom: #323335 1px solid;
+    border-top: #323335 1px solid;
+}
+.room-name {
+    font-size: 14px;
+    padding: 5px 0px;
+}
+.room-main-block, .user-main-block {
+    display: flex;
+    width: 85%;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+.prev-last-msg {
+    display: flex;
+    font-size: 14px;
+    justify-content: space-between;
+}
+.room-image, .user-image {
+    height: 60px;
+    width: 60px;
+    border-radius: 50%;
+    margin: 10px;
+}
+.room, .user {
+    display: flex;
+    color: white;
+    padding: 5px 2px;
+    border-radius: 10px;
+    align-items: center;
+}
+.create-room-btn {
+    margin: 0px 2px;
+    min-width: 30px;
+    width: 120px;
+}
+.create-room{
+    display: flex;
+    align-items: center;
+    margin: .5rem 1rem;
+}
+.room > a > .avatar {
+    background-image: url(/media/images/room-images/base-room.png);
+}
+.roomImgPrev {
+    width: 100px;
+    height: 100px;
+    margin: 10px auto;
+    border-radius: 50%;
+    background-image: url(/media/images/room-images/base-room.png);
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+}
