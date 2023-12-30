@@ -21,7 +21,7 @@ function startAudioRecording(ws) {
                         chunks.push(event.data)
 
                     const reader = new FileReader();
-                    audioBlob = new Blob(chunks, {type: 'audio/wav'});
+                    audioBlob = new Blob(chunks, {type: 'audio/ogg'});
 
                     reader.onload = () => {
                         const arrayBuffer = reader.result;
@@ -40,7 +40,7 @@ function startAudioRecording(ws) {
                 console.log(`The following getUserMedia error occurred: ${err}`)
             });
     } else {
-        alert("getUserMedia not supported on your browser")
+        alert("getUserMedia not supported on your browser");
     }
 }
 
