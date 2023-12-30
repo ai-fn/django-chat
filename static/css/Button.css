@@ -56,3 +56,13 @@
 .Button.translucent.activated {
     color: var(--color-primary);
 }
+@media (hover: hover){
+    .Button.translucent:not(.disabled):not(:disabled):hover {
+        background-color: var(--color-interactive-element-hover);
+    }
+}
+@media (hover: hover){
+    .Button.primary:not(.disabled):not(:disabled):hover {
+        background-color: var(--color-primary-shade);
+    }
+}
