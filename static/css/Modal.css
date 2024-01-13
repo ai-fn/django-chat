@@ -70,3 +70,26 @@
 .Modal .modal-title:not(:only-child) {
     margin: 0 1.5rem;
 }
+.Modal .dialog-buttons {
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+}
+.Modal .confirm-dialog-button {
+    width: auto;
+    height: auto;
+    text-align: right;
+    font-weight: 500;
+    white-space: pre-wrap;
+}
+.Modal .dialog-buttons .confirm-dialog-button+.confirm-dialog-button {
+    margin-right: 1rem;
+}
+.Modal .modal-title, .Modal .modal-content, .Modal .modal-content>p {
+    unicode-bidi: plaintext;
+    text-align: initial;
+}
+.Modal.delete .modal-dialog, .Modal.error .modal-dialog, .Modal.confirm .modal-dialog, .Modal.pin .modal-dialog, .Modal.unpin-all .modal-dialog {
+    max-width: 23rem;
+}

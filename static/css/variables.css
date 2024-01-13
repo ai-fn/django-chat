@@ -157,6 +157,7 @@
     --safe-area-right: env(safe-area-inset-right);
     --safe-area-bottom: env(safe-area-inset-bottom);
     --safe-area-left: env(safe-area-inset-left);
+    --offset-footer-height: 9rem;
 }
 
 .Message.own {
@@ -183,7 +184,29 @@
     --color-voice-transcribe: var(--color-voice-transcribe-button-own);
     --thumbs-background: var(--color-background-own);
 }
-
+html {
+    --color-peer-0: #e17076;
+    --color-peer-bg-0: #e170761a;
+    --color-peer-bg-active-0: #e170762b;
+    --color-peer-1: #faa774;
+    --color-peer-bg-1: #faa7741a;
+    --color-peer-bg-active-1: #faa7742b;
+    --color-peer-2: #a695e7;
+    --color-peer-bg-2: #a695e71a;
+    --color-peer-bg-active-2: #a695e72b;
+    --color-peer-3: #7bc862;
+    --color-peer-bg-3: #7bc8621a;
+    --color-peer-bg-active-3: #7bc8622b;
+    --color-peer-4: #6ec9cb;
+    --color-peer-bg-4: #6ec9cb1a;
+    --color-peer-bg-active-4: #6ec9cb2b;
+    --color-peer-5: #65aadd;
+    --color-peer-bg-5: #65aadd1a;
+    --color-peer-bg-active-5: #65aadd2b;
+    --color-peer-6: #ee7aae;
+    --color-peer-bg-6: #ee7aae1a;
+    --color-peer-bg-active-6: #ee7aae2b;
+}
 html.theme-dark {
     color-scheme: dark;
     --scrollbar-width: 5px;
@@ -315,4 +338,22 @@ html.theme-dark {
     --color-primary-shade: var(--color-green);
     --color-primary-shade-darker: var(--color-green-darker);
     --color-white: var(--color-background-own);
+}
+.peer-color-3 {
+    --accent-color: var(--color-peer-3, var(--color-text));
+    --bar-gradient: var(--color-peer-gradient-3);
+    --accent-background-color: var(--color-peer-bg-3, var(--hover-color));
+    --accent-background-active-color: var(--color-peer-bg-active-3, var(--active-color));
+}
+.peer-color-2 {
+    --accent-color: var(--color-peer-2, var(--color-text));
+    --bar-gradient: var(--color-peer-gradient-2);
+    --accent-background-color: var(--color-peer-bg-2, var(--hover-color));
+    --accent-background-active-color: var(--color-peer-bg-active-2, var(--active-color));
+}
+.peer-color-5 {
+    --accent-color: var(--color-peer-5, var(--color-text));
+    --bar-gradient: var(--color-peer-gradient-5);
+    --accent-background-color: var(--color-peer-bg-5, var(--hover-color));
+    --accent-background-active-color: var(--color-peer-bg-active-5, var(--active-color));
 }

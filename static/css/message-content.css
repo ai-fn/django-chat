@@ -43,3 +43,54 @@
     border-bottom-left-radius: var(--border-bottom-left-radius);
     border-bottom-right-radius: var(--border-bottom-right-radius);
 }
+.message-content.media .media-inner.interactive, .WebPage .media-inner.interactive {
+    cursor: var(--custom-cursor, pointer);
+}
+.message-content.media .media-inner, .WebPage .media-inner {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.message-content img {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+}
+.message-content.media.text .media-inner, .WebPage.text .media-inner {
+    margin-top: -0.3125rem; 
+}
+.message-content {
+    position: relative;
+    max-width: var(--max-width);
+}
+.media-inner a {
+    height: 100%;
+    width: 100%;
+}
+.message-content.media.text .Album {
+    margin: -0.3125rem -0.5rem 0.3125rem;
+}
+.message-content.media.force-sender-name .media-inner, .message-content.media.force-sender-name .Album,
+ .message-content.media.text .media-inner, .message-content.media.is-via-bot .media-inner,
+  .message-content.media.has-subheader .media-inner, .message-content.media.has-subheader .Album,
+   .WebPage.force-sender-name .media-inner, .WebPage.force-sender-name .Album, .WebPage.text .media-inner,
+    .WebPage.is-via-bot .media-inner, .WebPage.has-subheader .media-inner, .WebPage.has-subheader .Album
+     {
+    margin-left: -0.5rem;
+    margin-right: -0.5rem;
+}
+.theme-dark .message-content.document .File {
+    --color-primary: var(--color-selection-highlight);
+}
+.message-content.document .File {
+    margin-top: 0.1875rem;
+}
+
+.message-content.document:not(.text)>.MessageMeta {
+    top: auto !important;
+    bottom: -0.5rem !important;
+    margin-top: -0.25rem;
+}
+.message-content.document:not(.text)>.MessageMeta {
+    margin-top: -1.25rem;
+}
