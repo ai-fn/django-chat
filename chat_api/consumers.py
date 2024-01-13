@@ -147,7 +147,12 @@ class ChatConsumer(WebsocketConsumer):
             "message": f' {", ".join(members)} joined to our chat!'
         }))
 
-    def delete_message(self, text_data_json):
+    def receive_txt_message(self, text_data_json) -> None:
+        body = text_data_json['message']
+        msg = self.create_message(body)
+        self.send_message_to_all(msg)
+
+    def delete_message(self, text_data_json) -> None:
         msg_id = text_data_json['msg_id']
         msg = Message.objects.filter(pk=msg_id)
         result = "not found, deletion failed"
