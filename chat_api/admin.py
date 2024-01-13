@@ -7,10 +7,13 @@ from .models import *
 
 @admin.register(Message)
 class MessageRegister(admin.ModelAdmin):
-    list_display = ["body", "sender", "sent_at", "room"]
+    list_display = ["id", "body", "sender", "sent_at", "room"]
     list_filter = (
         "sent_at",
-        "room"
+        "room",
+        "as_file",
+        "pinned",
+        "edited",
     )
 
     ordering = ("-sent_at", )
@@ -19,17 +22,15 @@ class MessageRegister(admin.ModelAdmin):
 
 @admin.register(CustomUser)
 class CustomUserRegister(admin.ModelAdmin):
-    list_display = ["username", "email", "password", "First_Name", "Second_Name", "Patronymic", "Date_of_birth",
+    list_display = ["username", "email", "password", "First_Name", "Second_Name",
                     "Avatar", "is_deactivated", "is_email_confirmed", "is_staff", "is_superuser"]
     list_filter = (
         "is_staff",
         "is_superuser",
         "is_email_confirmed",
-        "Date_of_birth"
     )
 
-    ordering = ("-Date_of_birth", )
-    search_fields = ['username', 'First_Name', 'Second_Name', 'Patronymic']
+    search_fields = ['username', 'First_Name', 'Second_Name']
 
 
 @admin.register(Folder)
@@ -52,3 +53,13 @@ class RoomRegister(admin.ModelAdmin):
 
     ordering = ("-created_at", )
     search_fields = ['name', 'members__name']
+
+
+@admin.register(Attachments)
+class AttachmentsRegister(admin.ModelAdmin):
+    list_display = ["message", "file"]
+    list_filter = (
+        "message",
+    )
+
+    search_fields = ['message', 'file']
