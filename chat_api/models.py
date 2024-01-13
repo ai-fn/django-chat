@@ -163,3 +163,22 @@ class Attachments(models.Model):
 
     def __str__(self):
         return f"Attachment {self.id} for message {self.message_id}"
+
+
+@receiver(pre_delete, sender=Message)
+@receiver(pre_delete, sender=Attachments)
+def delete_file(sender, instance, **kwargs):
+    file: str = ""
+    if hasattr(instance, "file"):
+        if os.path.isfile(instance.file.path):
+            file = instance.file.path
+            os.remove(instance.file.path)
+    elif hasattr(instance, "voice_file") and instance.voice_file:
+        if os.path.isfile(instance.voice_file.path):
+            file = instance.voice_file.path
+            os.remove(instance.voice_file.path)
+    elif hasattr(instance, "video_file") and instance.video_file:
+        if os.path.isfile(instance.video_file.path):
+            file = instance.video_file.path
+            os.remove(instance.video_file.path)
+    logger.info("File %s successfully deleted" % file)
