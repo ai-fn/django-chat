@@ -155,7 +155,10 @@ class Message(models.Model):
 
 
 class Attachments(models.Model):
+    name = models.CharField(max_length=250)
     file = models.FileField(upload_to=get_upload_path)
+    file_type = models.CharField(default="image")
+    file_size = models.FloatField()
     message = models.ForeignKey(Message, related_name='attachments', on_delete=models.CASCADE)
 
     def __str__(self):
