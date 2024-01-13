@@ -14,6 +14,11 @@ def join(value, join_by: str, *args, **kwargs):
     return join_by.join(value.split(" "))
 
 
+@register.simple_tag
+def first_letter(value: str,  *args, **kwargs):
+    return value[0].upper()
+
+
 @register.filter(name='sort')
 def sort(value, sort_by: str):
     try:
