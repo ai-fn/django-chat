@@ -104,19 +104,121 @@ ws.onmessage = function (e) {
             console.log(data.message)
             break;
     }
+		case "pin-message":
+			pinnedMessages.push(data.message);
+			pinnedMessages.sort((a, b) => new Date(a.sent_at) - new Date(b.sent_at));
+			setPinnedMessage(data.message);
+			let pinMsg = messagesArray.find(el => el.id == data.message.id);
+			if (pinMsg != undefined)
+				pinMsg.pinned = true;
+			break;
+		case "unpin-message":
+			let unpinnedMessage = pinnedMessages.find(el => el.id == data.message.id);
+			pinnedMessages.splice(pinnedMessages.indexOf(unpinnedMessage), 1);
+			let glUnpin = messagesArray.find(el => el.id == data.message.id);
+			if (glUnpin != undefined)
+				glUnpin.pinned = false;
+			unpinAction();
+			showNotify(`User ${data.user.username} unpin message "${data.message.body}"`);
+			break;
 }
 
 addMembersBtn.addEventListener("click", addMembers);
 
-messages.addEventListener('scroll', () => {
-    clearTimeout(isScrolling)
+function setPinnedMessage(selectMessage) {
+	let wrapper = document.querySelector(".HeaderPinnedMessageWrapper");
 
-    isScrolling = setTimeout(() => {
-        isScrolling = false
-    }, 100);
+	let pinnedMessagesHtml = `
+			<button type="button" class="Button smaller translucent round" aria-label="Unpin message" title="Unpin message" style="">
+				<i class="icon fa-solid fa-xmark"></i>
+			</button>
+			<div class="uhn_g6FmUELuGJrCm45w">
+				<div class="II9Qj_b_XQlgwGAOoy7u">
+					<div class="sNpxwL0ihB0aXnfphNmp" style="clip-path: url(&quot;#clipPath&quot;); width: 2px; height: 74px; transform: translateY(0px);">
+							<div class="YX_iyQuDtga6uKXRQqR0" style="--height: 7.5px; --translate-y: 9.5px; --translate-track: 0px; height: 7.5px; transform: translateY(9.5px);">
+						
+							</div>
+							<span><svg height="0" width="0"><defs><clipPath id="clipPath"><path></path></clipPath></defs></svg></span>
+						</div>
+					</div>
+					<div class="Transition EK6juGhJwhsLLm4Aag2F">
+						<div class="Transition_slide Transition_slide-active" data-message-id="${selectMessage.id}">
+							<div class="RFnmHP92f6CwfuR2Upaw"></div>
+						</div>
+						<div class="Transition_slide Transition_slide-inactive">
+							<div class="RFnmHP92f6CwfuR2Upaw"></div>
+						</div>
+					</div>
+					<div class="bSvmca5kaTIUh3yJBxnF">
+					<div class="q9_FnsHlndM1hZqZjxjM" dir="auto">
+						<span class="Tx2CpCmpZZrHnCMUksg2">Pinned Message</span>
+					</div>
+					<div class="Transition ugsKEK4Xb166oFMP8hHy">
+						<div class="Transition_slide Transition_slide-active" data-message-id="${selectMessage.id}">
+							<p dir="auto" class="WRuyhyQK6mv28Mz8iK28"></p>
+						</div>
+						<div class="Transition_slide Transition_slide-inactive">
+							<p dir="auto" class="WRuyhyQK6mv28Mz8iK28"></p>
+						</div>
+					</div>
+				</div>
+				<div class="ripple-container"></div>
+			</div>`;
 
-    handleScroll();
-})
+	if (!wrapper) {
+		let headerActions = document.querySelector(".header-tools");
+		wrapper = document.createElement("div");
+		wrapper.setAttribute("class", "HeaderPinnedMessageWrapper TMOjo7XfD1ZiiuRtfpkm opacity-transition fast open shown");
+		document.querySelector(".MiddleHeader").insertBefore(wrapper, headerActions);
+		wrapper.insertAdjacentHTML("beforeend", pinnedMessagesHtml);
+		wrapper.querySelector("button").addEventListener("click", () => unpinMessage(wrapper.querySelector(".Transition_slide-active").getAttribute("data-message-id")));
+		document.querySelector(".HeaderPinnedMessageWrapper .ripple-container").addEventListener("click", rippleHandler);
+	}
+	setActivePinMessage(selectMessage);
+}
+
+function unpinAction(){
+	let length = pinnedMessages.length;
+	if (length >= 1) {
+		setActivePinMessage(pinnedMessages[length - 1]);
+		return;
+	} else {
+		let wrapper = document.querySelector(".HeaderPinnedMessageWrapper");
+		wrapper.classList.replace("open", "not-open");
+		setTimeout(() => {
+			wrapper.classList.replace("shown", "not-shown");
+			wrapper.remove();
+		}, 150);
+	}
+}
+
+function unpinMessage(messageId) {
+	ws.send(JSON.stringify({
+		action: "unpin-message",
+		messageId: messageId
+	}))
+}
+
+function setActivePinMessage(selectMessage) {
+	let textContentHtml;
+	let result = getPreviewMessage(selectMessage);
+	let wrapper = document.querySelector(".HeaderPinnedMessageWrapper");
+	let inactive = wrapper.querySelectorAll(".Transition_slide-inactive");
+
+	textContentHtml = `<span>${result.fileTypeImg} ${result.text}</span>`;
+
+	for (let item of inactive) {
+		let child = item.children[0].children[0];
+		if (child)
+			child.remove();
+	}
+
+	let active = wrapper.querySelectorAll(".Transition_slide-active");
+	active.forEach(el => el.classList.replace("Transition_slide-active", "Transition_slide-inactive"));
+
+
+	inactive[1].children[0].insertAdjacentHTML('beforeend', textContentHtml);
+	inactive[0].children[0].insertAdjacentHTML('beforeend', result.preview);
 
 function scrollToBottom(){
     try{
@@ -125,6 +227,26 @@ function scrollToBottom(){
     } catch{
         messages.scrollTo(0, messages.scrollHeight)
     }
+	if (result.preview.length > 0)
+		wrapper.querySelector("img.pictogram").classList.replace("pictogram", "JfPOYkOcaMjS7Y5rsHZ4");
+
+	inactive.forEach(el => {
+		el.classList.replace("Transition_slide-inactive", "Transition_slide-active");
+		el.setAttribute("data-message-id", selectMessage.id);
+	});
+
+	let infoContainer = document.querySelector(".bSvmca5kaTIUh3yJBxnF");
+	result.isMedia ? infoContainer.classList.add("FBCNFm307_rxATSHPSiN") : infoContainer.classList.remove("FBCNFm307_rxATSHPSiN");
+
+	updateClipPath(pinnedMessages.length);
+	setClipStyle(pinnedMessages.length, pinnedMessages.findIndex(el => el.id == selectMessage.id));
+	let index = pinnedMessages.findIndex(el => el.id == selectMessage.id);
+	document.querySelector(".Tx2CpCmpZZrHnCMUksg2").textContent = index > 0 ? `Pinned Message #${index}` : `PinnedMessage`;
+}
+
+function rippleHandler() {
+	let selectMessageId = document.querySelector(".HeaderPinnedMessageWrapper .Transition_slide-active").getAttribute("data-message-id");
+	scrollToSelectedMessage(selectMessageId);
 }
 
 

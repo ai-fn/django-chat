@@ -134,20 +134,66 @@ class ChatConsumer(WebsocketConsumer):
             ).data,
         }))
 
-    def receive_txt_message(self, text_data_json):
-        body = text_data_json['message']
-        msg = self.create_message(body)
-        self.send_message_to_all(msg)
+    def pin_message(self, event):
+        message = event['message']
 
-    def audio_message(self, text_data_json) -> None:
-        message = self.create_message(msg_type=Message.Type.VOICE)
-        base64_file = text_data_json['audioFile']
-        bytes_file = base64.b64decode(base64_file)
-        with open(os.path.join(settings.MEDIA_ROOT, "voice-message.ogg"), "wb") as file:
-            file.write(bytes_file)
-            file_name = file.name
-        compress_audio(input_file=file_name, instance=message)
-        self.send_message_to_all(message)
+        self.send(
+            json.dumps({
+                'action': 'pin-message',
+                'message': message
+            })
+        )
+
+    def pin_action(self, text_data_json) -> None:
+        msg_id = text_data_json['messageId']
+        message = self.get_message(msg_id)
+        if message is not None:
+            message.pinned = True
+            message.save()
+
+            async_to_sync(self.channel_layer.group_send)(
+                self.room_group_name,
+                {
+                    'type': 'pin_message',
+                    'message': MessageSerialize(message).data
+                }
+            )
+        else:
+            self.send(json.dumps({
+                'action': 'notif',
+                'message': 'Message not found'
+            }))
+
+    def unpin_message(self, event):
+        message = event["message"]
+        user = event["user"]
+
+        self.send(json.dumps({
+            "action": "unpin-message",
+            "message": message,
+            "user": user
+        }))
+
+    def unpin_action(self, text_data_json):
+        message_id = text_data_json['messageId']
+        message = self.get_message(message_id)
+        if message is not None:
+            message.pinned = False
+            message.save()
+
+            async_to_sync(self.channel_layer.group_send)(
+                self.room_group_name,
+                {
+                    "type": "unpin_message",
+                    "message": MessageSerialize(message).data,
+                    "user": UserSerialize(self.scope['user']).data
+                }
+            )
+        else:
+            self.send(json.dumps({
+                'action': 'notif',
+                'message': 'Message not found'
+            }))
 
     def add_member(self, text_data_json) -> None:
         members = text_data_json['members']
