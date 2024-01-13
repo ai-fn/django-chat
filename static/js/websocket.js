@@ -25,85 +25,132 @@ ws.onopen = () => {
         action: 'connect',
     }))
 };
-ws.onmessage = function (e) {
-    const data = JSON.parse(e.data)
-    switch (data.action) {
-        case "connect":
-            user = data.user
-            room = data.room
-            for (let mess of data.chat_messages){
-                mess.users_read.includes(user.user_id) ? readMessages.push(mess) : unreadMessages.push(mess);
-                messagesArray.push(mess);
-            }
-            for (let mess of readMessages){
-                getMesg(mess, false, user.user_id == mess.sender.user_id);
-            }
-            if (unreadMessages.length != 0){
-                getChatNotify('Unread messages', extraClass='unread-messages')
-                for (let mess of unreadMessages)
-                    getMesg(mess, unread=true);
-            }
-            markMessagesAsRead()
-            try{
-                const el = document.getElementsByClassName('unread-messages')[0]
-                el.scrollIntoView({behavior: 'smooth' })
-            }
-            catch{scrollToBottom()}
-            break;
-        case "notif":
-            alert(data.message)
-            console.log(data.message)
-            break;
-        case "receive":
-            getMesg(data.message, false, user.user_id == data.message.sender.user_id)
-            messagesArray.push(data.message);
-            unreadMessages.push(data.message)
-            markMessagesAsRead()
-            scrollToBottom()
-            break;
-        case "edit-message":
-            let msg = document.getElementById(`message${data.message.id}`);
-            let innerContent = msg.getElementsByClassName("content-inner")[0];
-            let textContent = innerContent.getElementsByClassName("text-content")[0];
-            let messageMeta = msg.getElementsByClassName("MessageMeta")[0];
-            if (textContent != undefined){
-                textContent.innerHTML = data.message.body;
-            }
-            else{
-                innerContent.insertAdjacentHTML("beforeend", `<div class="text-content">${data.message.body}</div>`);
-            }
-            if (textContent.getElementsByClassName("MessageMeta")[0] == undefined){
-                textContent.appendChild(messageMeta);
-            }
-            let msgObj = messagesArray.find(msg => msg.id == data.message.id);
-            let msgIndex = messagesArray.indexOf(msgObj);
-            msgObj.body = data.message.body;
-            let messageTime = messageMeta.getElementsByClassName("message-time")[0];
-            messageTime.setAttribute('title', `Sent at ${data.message.sent_at}\n${data.message.edited ? "Edited at" + data.message.edited_at : ""}`)
-            messageTime.innerHTML = `${data.message.edited ? "edited" : ""} ${data.message.time}`
-            messagesArray[msgIndex] = msgObj;
-            closeComposerEmbeded();
-            break;
-        case "msg-deletion":
-            if (data.deleted){
-                let msg = document.getElementById(`message${data.msg_id}`);
-                let msgContainer = msg.closest(".message-container")
-                msg.classList.replace("open", "not-open")
-                if (msgContainer != null)
-                    setTimeout(() => {
-                        msg.classList.replace("shown", "not-shown")
-                        msgContainer.remove()
-                    }, 200);
-            }
-            showNotify(data.message);
-            break;
-        case "chat-notify":
-            getChatNotify(data.message, extraClass='add-members')
-            break;
-        default:
-            console.log(data.message)
-            break;
-    }
+
+function wsOnmessage(e) {
+	const data = JSON.parse(e.data)
+	switch (data.action) {
+		case "connect":
+			user = data.user
+			room = data.room
+			readMessages = [];
+			unreadMessages = [];
+			messagesArray = [];
+			messages.innerHTML = "";
+			for (let mess of data.chat_messages) {
+				if (mess.users_read.includes(user.user_id)) {
+					getMesg(mess, false, user.user_id == mess.sender.user_id, mess.as_file);
+					readMessages.push(mess);
+				} else {
+					unreadMessages.push(mess);
+				}
+				messagesArray.push(mess);
+			}
+			if (unreadMessages.length != 0) {
+				getChatNotify('Unread messages', 'unread-messages')
+				for (let mess of unreadMessages)
+					getMesg(mess, true, user.user_id == mess.sender.user_id, mess.as_file);
+			}
+			markMessagesAsRead()
+			let el = document.getElementsByClassName('unread-messages')[0]
+			if (el != null) {
+				el.scrollIntoView({ behavior: 'smooth' })
+			} else {
+				scrollToBottom()
+			}
+			pinnedMessages = data.pinned_messages;
+			if (pinnedMessages.length != 0)
+				setPinnedMessage(pinnedMessages[pinnedMessages.length - 1]);
+			break;
+		case "notif":
+			showNotify(data.message)
+			break;
+		case "receive":
+			if (messageList.classList.contains("select-mode-active")){
+				let lastMessage = mainContainer.querySelector(`#message${messagesArray[messagesArray.length - 1].id}`);
+    			lastMessage.classList.remove("last-in-list");
+			}
+			getMesg(data.message, false, user.user_id == data.message.sender.user_id, data.message.as_file);
+			messagesArray.push(data.message);
+			if (messageList.classList.contains("select-mode-active")){
+				let lastMessage = mainContainer.querySelector(`#message${messagesArray[messagesArray.length - 1].id}`);
+    			lastMessage.classList.add("last-in-list");
+			}
+			unreadMessages.push(data.message);
+			markMessagesAsRead();
+			scrollToBottom();
+			break;
+		case "edit-message":
+			let msg = document.getElementById(`message${data.message.id}`);
+			let innerContent = msg.getElementsByClassName("content-inner")[0];
+			let textContent = innerContent.getElementsByClassName("text-content")[0];
+			let messageMeta = msg.getElementsByClassName("MessageMeta")[0];
+
+			if (data.message.body.trim().length > 0) {
+				if (textContent != undefined) {
+					textContent.innerHTML = data.message.body.trim();
+				} else {
+					innerContent.insertAdjacentHTML("beforeend", `<div class="text-content">${data.message.body.trim()}</div>`);
+					textContent = innerContent.getElementsByClassName("text-content")[0];
+				}
+				if (textContent.getElementsByClassName("MessageMeta")[0] == undefined) {
+					textContent.appendChild(messageMeta);
+				}
+				innerContent.parentElement.classList.replace("no-text", "text");
+			} else {
+				innerContent.parentElement.insertAdjacentElement("beforeend", messageMeta);
+				innerContent.parentElement.classList.replace("text", "no-text");
+				textContent.remove();
+			}
+
+			if (!data.message.as_file && data.message.body.length == 0 && data.message.attachments.length > 0) {
+				innerContent.parentElement.classList.remove("has-solid-background");
+			} else {
+				innerContent.parentElement.classList.add("has-solid-background");
+			}
+
+			let isPinned = pinnedMessages.find(el => el.id == data.message.id);
+			if (isPinned){
+				pinnedMessages[pinnedMessages.indexOf(isPinned)] = data.message;
+				setActivePinMessage(data.message);
+			}
+
+			let msgObj = messagesArray.find(msg => msg.id == data.message.id);
+			let msgIndex = messagesArray.indexOf(msgObj);
+			msgObj.body = data.message.body;
+			let messageTime = messageMeta.getElementsByClassName("message-time")[0];
+			messageTime.setAttribute('title', `Sent at ${data.message.sent_at}\n${data.message.edited ? "Edited at " + data.message.edited_at : ""}`)
+			messageTime.innerHTML = `${data.message.edited ? "edited" : ""} ${data.message.time}`
+			messagesArray[msgIndex] = msgObj;
+			break;
+		case "msg-deletion":
+			if (data.deleted) {
+				let msg = document.getElementById(`message${data.msg_id}`);
+				let msgContainer = msg.closest(".message-container")
+				msg.classList.replace("open", "not-open")
+				if (msgContainer != null)
+					setTimeout(() => {
+						msg.classList.replace("shown", "not-shown")
+						msgContainer.remove()
+					}, 200);
+				let deletedMessage = messagesArray.find(el => el.id == data.msg_id);
+				let index = messagesArray.indexOf(deletedMessage);
+				if (index != -1)
+					messagesArray.splice(index, 1);
+			}
+			showNotify(data.message);
+			break;
+		case "mark_as_read":
+			let unread = document.querySelectorAll('.Message.unread-message');
+			if (unread.length > 0) {
+				setTimeout(() => {
+					document.querySelector('.chat-notify .unread-messages').remove();
+					unread.forEach(el => { el.classList.remove("unread-message") });
+				}, 2000)
+			}
+			break;
+		case "chat-notify":
+			getChatNotify(data.message, 'add-members');
+			break;
 		case "pin-message":
 			pinnedMessages.push(data.message);
 			pinnedMessages.sort((a, b) => new Date(a.sent_at) - new Date(b.sent_at));
@@ -121,9 +168,12 @@ ws.onmessage = function (e) {
 			unpinAction();
 			showNotify(`User ${data.user.username} unpin message "${data.message.body}"`);
 			break;
+		default:
+			console.log(data.action, data.message)
+			break;
+	}
 }
 
-addMembersBtn.addEventListener("click", addMembers);
 
 function setPinnedMessage(selectMessage) {
 	let wrapper = document.querySelector(".HeaderPinnedMessageWrapper");
@@ -220,13 +270,6 @@ function setActivePinMessage(selectMessage) {
 	inactive[1].children[0].insertAdjacentHTML('beforeend', textContentHtml);
 	inactive[0].children[0].insertAdjacentHTML('beforeend', result.preview);
 
-function scrollToBottom(){
-    try{
-        allMessages = document.getElementsByClassName('message-container')
-        allMessages[allMessages.length - 1].scrollIntoView({behavior:"smooth"})
-    } catch{
-        messages.scrollTo(0, messages.scrollHeight)
-    }
 	if (result.preview.length > 0)
 		wrapper.querySelector("img.pictogram").classList.replace("pictogram", "JfPOYkOcaMjS7Y5rsHZ4");
 

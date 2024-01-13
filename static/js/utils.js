@@ -8,6 +8,46 @@ export function urlify(text) {
   return text;
 }
 
+export function capitalizeString(string) {
+  let result;
+  let firstCharacter = string.charAt(0);
+
+  firstCharacter = firstCharacter.toUpperCase();
+  result = firstCharacter + string.slice(1);
+  
+  return result;
+}
+
+export function getPreviewMessage(selectMessage){
+
+	let preview = "";
+	let isMedia = false;
+	let fileTypeImg = "";
+	let text = selectMessage.body;
+	let localUrl = window.location.origin;
+
+  if (selectMessage.attachments.length > 0) {
+		let attach = selectMessage.attachments[0];
+		isMedia = ["image", "video"].includes(attach.file_type);
+		if (isMedia) {
+			preview = `<img src="${attach.file}" width="32" height="32" class="pictogram" draggable="false">`;
+		} else {
+			fileTypeImg = `<img src="${localUrl}/static/attach.png" width="32" height="32" alt="" class="emoji emoji-small" draggable="false">`;
+		}
+
+		if (text == null || text.length == 0)
+			text = isMedia ? capitalizeString(attach.file_type) : attach.name;
+
+	}
+	else if (selectMessage.voice_file != null || selectMessage.video_file != null) {
+		fileTypeImg = `<img src="${localUrl}/static/voice.png" width="32" height="32" class="emoji emoji-small" draggable="false">`;
+		if (text == null || text.length == 0)
+			text = selectMessage.voice_file != null ? "Voice message" : "Video message";
+	}
+
+  return { isMedia, text, fileTypeImg, preview };
+}
+
 const maxVisibleCount = 4;
 const baseClipPath = `<spansvg height="0" width="0"><defs><clipPath id="clipPath"><path></path></clipPath></defs></svg></span>`;
 const padding = 2;
@@ -63,4 +103,20 @@ export function setClipStyle(count, index){
 	const composerStyle = `height: ${sliderHeight}px; transform: translateY(${sliderTranslateY}px); clip-path: url("#clipPath${count}");`;
 	document.querySelector(".YX_iyQuDtga6uKXRQqR0").style = style;
 	document.querySelector(`.${wrapperExtraClass}`).style = composerStyle;
+}
+
+export function setClassesToInputParentDiv(){
+	document.querySelectorAll("div input.form-control").forEach(el => {
+		el.parentElement.classList.add("input-group", "with-label");
+		el.value ? el.parentElement.classList.add("touched") : null;
+	})
+}
+
+export function inputIsTouched(e) {
+	const target = e.target;
+	if (target.value.length > 0) {
+	  target.parentElement.classList.add("touched");
+	  return;
+	}
+	target.parentElement.classList.remove("touched");
 }
