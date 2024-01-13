@@ -86,11 +86,25 @@ class ChatConsumer(WebsocketConsumer):
         message.edited = True
         message.edited_at = datetime.datetime.now()
         message.save()
-        logger.debug("Message with pk %s successfully edited" % msg_id)
-        self.send(json.dumps({
-            'action': 'edit-message',
-            'message': MessageSerialize(message).data,
-        }))
+        logger.info("Message with pk %s successfully edited" % msg_id)
+
+        async_to_sync(self.channel_layer.group_send)(
+            self.room_group_name,
+            {
+                'type': 'message_edition',
+                'message': MessageSerialize(message).data,
+            }
+        )
+
+    def message_edition(self, event):
+        message = event['message']
+
+        self.send(
+            json.dumps({
+                "action": "edit-message",
+                "message": message
+            })
+        )
 
     def mark_msg_action(self, text_data_json) -> None:
         err = None
