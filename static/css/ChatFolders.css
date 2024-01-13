@@ -1,0 +1,28 @@
+.Transition .ChatFolders {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+.Transition .ChatFolders .TabList {
+    justify-content: flex-start;
+    padding-left: 0.5625rem;
+    padding-bottom: 1px;
+    border-bottom: 0;
+    z-index: 1;
+    opacity: 1;
+    transition: opacity var(--layer-transition);
+}
+.Transition .ChatFolders .Tab {
+    flex: 0 0 auto;
+    padding-left: 0.625rem;
+    padding-right: 0.625rem;
+}
+.Transition .ChatFolders .Tab>span {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+}
+.ChatFolders>.Transition {
+    flex: 1;
+    overflow: hidden;
+}

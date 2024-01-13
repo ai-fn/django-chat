@@ -1,0 +1,77 @@
+.MessageSelectToolbar {
+    position: absolute;
+    bottom: 0.5rem;
+    left: 0.5rem;
+    right: 0.5rem;
+    width: auto;
+    z-index: 20;
+    justify-content: center;
+    margin: 0;
+    opacity: 1;
+}
+.MessageSelectToolbar-inner {
+    width: 100%;
+    max-width: calc(100%*var(--composer-hidden-scale));
+    display: flex;
+    align-items: center;
+    padding: 0.25rem;
+    background: var(--color-background);
+    border-radius: var(--border-radius-messages);
+    box-shadow: 0 1px 2px var(--color-default-shadow);
+    font-weight: 500;
+    transform: scaleX(1);
+    transition: transform var(--select-transition),opacity var(--select-transition);
+}
+.MessageSelectToolbar-actions .item {
+    width: 100%;
+    background: none;
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+    display: flex;
+    position: relative;
+    overflow: hidden;
+    line-height: 1.5rem;
+    white-space: nowrap;
+    color: var(--color-text);
+    --ripple-color: rgba(0, 0, 0, 0.08);
+    cursor: var(--custom-cursor, pointer);
+    unicode-bidi: plaintext;
+    padding: 0.6875rem;
+    border-radius: 50%;
+}
+.MessageSelectToolbar:not(.shown) {
+    opacity: 0;
+    pointer-events: none;
+}
+@media (hover: hover){
+    .MessageSelectToolbar-actions .item:hover, .MessageSelectToolbar-actions .item:focus {
+    background-color: var(--color-chat-hover);
+    text-decoration: none;
+    }
+}
+
+@media (min-width: 601px){
+    .MessageSelectToolbar {
+        left: 1rem;
+        right: 1rem;
+        bottom: 1.25rem;
+    }
+}
+.MessageSelectToolbar .MessageSelectToolbar-inner {
+    transform: scaleX(1) translateX(0);
+}
+.mask-image-disabled .MessageSelectToolbar-inner, .mask-image-disabled .unpin-all-button, .mask-image-disabled .join-subscribe-button, .mask-image-disabled .messaging-disabled {
+    box-shadow: 0 0.25rem 0.5rem 0.125rem var(--color-default-shadow);
+    border-radius: var(--border-radius-messages);
+}
+.MessageSelectToolbar:not(.shown).with-composer .MessageSelectToolbar-inner {
+    transform: scaleX(var(--toolbar-hidden-scale, 1)) translateX(var(--toolbar-translate-x, 0));
+}
+.MessageSelectToolbar-actions {
+    margin-left: auto;
+    display: flex;
+}
+.MessageSelectToolbar-actions .item.destructive {
+    color: var(--color-error);
+}

@@ -1,0 +1,50 @@
+.MessageList, .RoomList {
+    flex: 1;
+    width: 100%;
+    max-height: calc(100% - var(--offset-footer-height, 9rem));
+    margin-bottom: 0.5rem;
+    overflow-y: scroll;
+    overflow-x: hidden;
+    transition: bottom 150ms ease-out,transform var(--layer-transition),height .15s ease-out !important;
+}
+.MessageList .messages-container, .RoomList .rooms-container {
+    width: 100%;
+    max-width: var(--messages-container-width);
+    min-height: 100%;
+    margin: 0 auto;
+    display: flex;
+    justify-content: flex-end;
+    flex-direction: column;
+    padding: 1rem 1rem 0 1.125rem;
+}
+.MessageList.embedded {
+    --offset-footer-height: 12rem;
+}
+.RoomsHeader {
+    max-width: var(--messages-container-width);
+    margin: 0 auto;
+}
+.MessageList.select-mode-active .last-in-list, .MessageList.type-pinned .last-in-list {
+    margin-bottom: 5.625rem;
+}
+.MessageList .Message::before, .MessageList .ActionMessage::before {
+    content: "";
+    position: absolute;
+    top: -0.1875rem;
+    bottom: -0.1875rem;
+    left: -50vw;
+    right: -50vw;
+    background: #000;
+    z-index: 0;
+    opacity: 0;
+    transition: opacity var(--select-transition);
+}
+.MessageList .Message.focused::before, .MessageList .Message.is-forwarding::before, .MessageList .Message.is-selected::before, .MessageList .Message.has-menu-open::before, .MessageList .ActionMessage.focused::before, .MessageList .ActionMessage.is-forwarding::before, .MessageList .ActionMessage.is-selected::before, .MessageList .ActionMessage.has-menu-open::before {
+    opacity: .1;
+}
+.theme-dark .MessageList .Message.focused::before, .theme-dark .MessageList .Message.is-forwarding::before, .theme-dark .MessageList .Message.is-selected::before, .theme-dark .MessageList .Message.has-menu-open::before, .theme-dark .MessageList .ActionMessage.focused::before, .theme-dark .MessageList .ActionMessage.is-forwarding::before, .theme-dark .MessageList .ActionMessage.is-selected::before, .theme-dark .MessageList .ActionMessage.has-menu-open::before {
+    opacity: .6;
+}
+.MessageList.select-mode-active {
+    --offset-footer-height: 4rem;
+}

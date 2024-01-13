@@ -1,0 +1,32 @@
+.II9Qj_b_XQlgwGAOoy7u {
+    position: relative;
+    height: 2.25rem;
+    margin: 0.125rem 0;
+    width: 0.125rem;
+    min-width: 0.125rem;
+    overflow: hidden;
+}
+.sNpxwL0ihB0aXnfphNmp {
+    background-color: var(--color-primary-opacity);
+    position: relative;
+    will-change: transform;
+    transition: transform .25s ease-in-out;
+}
+.YX_iyQuDtga6uKXRQqR0 {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 0.125rem;
+    background: var(--color-primary);
+    border-radius: 0.0625rem;
+    will-change: transform;
+    transition: transform .25s ease-in-out;
+    transform: translateY(var(--translate-y));
+    height: var(--height);
+}
+.QpNjYZM0KJrGrocs69__ {
+    height: 2.25rem;
+    width: 0.125rem;
+    border-radius: 0.0625rem;
+    background: var(--color-primary);
+}

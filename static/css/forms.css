@@ -1,0 +1,27 @@
+.input-group {
+    position: relative;
+    margin-bottom: 1.5rem;
+}
+.input-group label {
+    display: block;
+    padding: 0 0.25rem;
+    position: absolute;
+    left: 0.75rem;
+    top: 0.9375rem;
+    background-color: var(--color-background);
+    font-size: 1rem;
+    font-weight: 400;
+    color: var(--color-placeholders);
+    transition: transform .15s ease-out,color .15s ease-out;
+    cursor: var(--custom-cursor, text);
+    pointer-events: none;
+    transform-origin: left center;
+    white-space: nowrap;
+    z-index: 5;
+}
+.input-group > .form-control:focus {
+    z-index: 4;
+}
+input:autofill, input:autofill:hover, input:autofill:focus, input:autofill:active {
+    -webkit-box-shadow: 0 0 0 30px var(--color-background) inset !important;
+}

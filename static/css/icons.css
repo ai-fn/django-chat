@@ -1,0 +1,49 @@
+.form-control {
+    --border-width: 1px;
+    display: block;
+    width: 100%;
+    height: 3.375rem;
+    padding: calc(0.75rem - var(--border-width)) calc(0.9rem - var(--border-width));
+    border: var(--border-width) solid var(--color-borders-input);
+    border-radius: var(--border-radius-default) !important;
+    color: var(--color-text);
+    background-color: var(--color-background) !important;
+    outline: none;
+    transition: border-color .15s ease;
+    word-break: break-word;
+    -webkit-appearance: none;
+    font-size: 1rem;
+    line-height: 1.25rem;
+}
+.form-control:hover {
+    border-color: var(--color-primary);
+}
+.form-control:focus, .form-control.focus {
+    color: var(--color-text);
+    border-color: var(--color-primary);
+    box-shadow: inset 0 0 0 1px var(--color-primary);
+    caret-color: var(--color-primary);
+}   
+.form-control[dir] {
+    text-align: initial;
+}
+.icon {
+    line-height: 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+.input-group.touched label, .input-group.error label, .input-group.success label, .input-group .form-control:focus+label, .input-group .form-control.focus+label {
+    transform: scale(0.75) translate(-0.5rem, -2.25rem);
+}
+.input-group.touched label {
+    color: var(--color-text-secondary);
+}
+label:has( ~ .form-control.focus), label:has( ~ .form-control:focus) {
+    transform: scale(0.75) translate(-0.5rem, -2.25rem);
+}
+.form-control:focus+label, .form-control.focus+label {
+    color: var(--color-primary);
+}
+label:has( ~ .form-control.focus), label:has( ~ .form-control:focus) {
+    color: var(--color-primary);
+}

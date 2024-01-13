@@ -1,0 +1,30 @@
+.Chat {
+    --background-color: var(--color-background);
+    --thumbs-background: var(--background-color);
+    --z-forum-indicator: 2;
+    --z-badge: 4;
+    --z-ripple: 6;
+    --z-status: 8;
+    position: initial;
+    margin: 0;
+    width: 100%;
+    -webkit-touch-callout: none;
+}
+.Chat .info .last-message[dir=ltr], .Chat .info .typing-status[dir=ltr] {
+    text-align: left;
+}
+.Chat .info .last-message, .Chat .info .typing-status {
+    padding-right: 0.25rem;
+    flex-grow: 1;
+    color: var(--color-text-secondary);
+    unicode-bidi: plaintext;
+}
+.Chat .info .last-message .sender-name, .Chat .info .typing-status .sender-name {
+    color: var(--color-chat-username);
+}
+.Chat .info .last-message .colon, .Chat .info .last-message .chat-prefix-icon {
+    margin-inline-end: 0.1875rem;
+}
+.Chat .ripple-container {
+    z-index: var(--z-ripple);
+}
