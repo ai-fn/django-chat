@@ -338,11 +338,59 @@ function rippleHandler() {
 }
 
 
-function handleScroll(){
-    isScrolling = true;
-    if (unreadMessages.length !=0 && Math.floor(messages.scrollTop + messages.clientHeight) === messages.scrollHeight){
-        markMessagesAsRead(unreadMessages)
-    }
+
+export function scrollToBottom() {
+	setTimeout(() => {
+		messageList.scrollTo({ top: messageList.scrollHeight, behavior: "smooth" });
+	}, 150);
+	// }
+}
+
+function handleScroll() {
+	isScrolling = true;
+	if (unreadMessages.length != 0 && Math.floor(messages.scrollTop + messages.clientHeight) === messages.scrollHeight) {
+		markMessagesAsRead()
+	}
+}
+
+function setNearestPinnedMessage(event){
+	if (pinnedMessages.length <= 1)
+		return;
+
+	let nextPinnedElement;
+	let scrollHeight = messageList.scrollHeight;
+	let scrollTop = Math.ceil(messageList.scrollTop + messageList.clientHeight);
+	let currentMsgIndex = document.querySelector(".HeaderPinnedMessageWrapper .Transition_slide-active").getAttribute("data-message-id");	
+	let pinnedEl = pinnedMessages.map((el) => document.querySelector(`#message${el.id}`));
+	pinnedEl.sort((a, b) => (scrollHeight - a.offsetTop) - (scrollHeight - b.offsetTop));
+
+
+	let currentMsgPinIndex = pinnedEl.findIndex(el => el.getAttribute("data-message-id") == currentMsgIndex);
+	let nextPinIndex; 
+
+	if (event.deltaY > 0) {  //down
+		if (scrollHeight <= scrollTop + 10 && scrollHeight - 10 <= scrollTop - 10){ 
+			nextPinnedElement = pinnedEl[0];
+		} else {
+			nextPinIndex = currentMsgPinIndex - 1;
+			if (pinnedEl[nextPinIndex] && pinnedEl[currentMsgPinIndex].offsetTop <= messageList.scrollTop + messageList.clientHeight / 2){
+				nextPinnedElement = pinnedEl[nextPinIndex];
+			}
+		}
+	} else if (event.deltaY < 0) {  // up
+		if (currentMsgPinIndex == pinnedEl.length - 1){
+			nextPinnedElement = pinnedEl[pinnedEl.length - 1];
+		} else {
+			nextPinIndex = currentMsgPinIndex + 1;
+			if (pinnedEl[nextPinIndex] && pinnedEl[currentMsgPinIndex].offsetTop >= messageList.scrollTop - messageList.clientHeight / 2){
+				nextPinnedElement = pinnedEl[nextPinIndex];
+			}
+		}
+	}
+	if (nextPinnedElement && nextPinIndex != currentMsgPinIndex) {
+		let nextPinnedMessage = pinnedMessages.find(el => el.id == nextPinnedElement.getAttribute("data-message-id"));
+		setActivePinMessage(nextPinnedMessage);	
+	}
 }
 
 function markMessagesAsRead(){
