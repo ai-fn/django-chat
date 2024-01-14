@@ -27,57 +27,75 @@ presentation.insertAdjacentElement("beforeend", contextMenuItems);
 
 contextMenuContainer.insertAdjacentElement("beforeend", presentation);
 
+mainContainer.appendChild(contextMenuContainer);
+
+document.querySelector(".messages-footer .MessageSelectToolbar-inner>button").addEventListener("click", endMessagesSelection);
+document.querySelector(".messages-footer .MessageSelectToolbar-actions .destructive").addEventListener("click", deleteSelectedMessages);
+
+messageList.addEventListener("click", messageSelection);
+messageList.addEventListener("contextmenu", initContext);
+
 const actions = {
-  "Reply": {
-    action: function(){ console.log("reply!")},
-    imgName: "fa-solid fa-reply",
-  },
-  "Edit": {
-    action: edit,
-    imgName: "fa-solid fa-pen-to-square",
-  },
-  "Copy Text": {
-    action:	copy,
-    imgName: "fa-solid fa-copy"
-  },
-  "Copy Image": {
-    action: function(){ console.log("copy img!")},
-    imgName: "fa-solid fa-image"
-  },
-  "Pin": {
-    action: function(){ console.log("pin!")},
-    imgName: "fa-solid fa-thumbtack",
-  },
-  "Download": {
-    action: downloadFiles,
-    imgName: "fa-solid fa-download",
-  },
-  "Forward": {
-    action: function(){ console.log("forward!")},
-    imgName: "fa-solid fa-share",
-  },
-  "Select": {
-    action: function(){ console.log("select!")},
-    imgName: "fa-solid fa-circle-check",
-  },
-  "Delete": {
-    action: deletion,
-    imgName: "fa-solid fa-trash-can",
-  },
+    "Reply": {
+        action: function () { console.log("reply!") },
+        imgName: "fa-solid fa-reply",
+    },
+    "Edit": {
+        action: edit,
+        imgName: "fa-solid fa-pen-to-square",
+    },
+    "Copy Text": {
+        action: copy,
+        imgName: "fa-solid fa-copy"
+    },
+    "Copy Image": {
+        action: copyImageToClipboard,
+        imgName: "fa-solid fa-image"
+    },
+    "Pin": {
+        action: pinMessage,
+        imgName: "fa-solid fa-thumbtack",
+        rotate: 0,
+    },
+    "Unpin": {
+        action: unpinMessage,
+        imgName: "fa-solid fa-thumbtack",
+        rotate: 45,
+    },
+    "Download": {
+        action: downloadFiles,
+        imgName: "fa-solid fa-download",
+    },
+    "Forward": {
+        action: function () { console.log("forward!") },
+        imgName: "fa-solid fa-share",
+    },
+    "Select": {
+        action: startMessagesSelection,
+        imgName: "fa-solid fa-circle-check",
+    },
+    "Delete": {
+        action: () => { backdrop.click(); createDeletionModal(); },
+        imgName: "fa-solid fa-trash-can",
+    },
 }
 
 let actContainers = [];
 
-function buildContext(){
-  for (let name of Object.keys(actions)) {
-    if (name == "Copy Text" && selectMessage.body == null)
-      continue;
-    if (name == "Edit" && selectMessage.sender.user_id != user.user_id)
-      continue;
-    if (name == "Copy Image" && !selectMessage.attachments.some(obj => obj.file.name.contains(".jpg")))
-      continue;
-    if (name == "Download" && !selectMessage.attachments.some(obj => obj.name) && selectMessage.voice_file == null && selectMessage.video_file == null)
-      continue;
+function buildContext() {
+    for (let name of Object.keys(actions)) {
+        if (name == "Copy Text" && (selectMessage.body == null || selectMessage.body.length == 0))
+            continue;
+        if (name == "Edit" && selectMessage.sender.user_id != user.user_id)
+            continue;
+        if (name == "Pin" && selectMessage.pinned)
+            continue;
+        if (name == "Unpin" && !selectMessage.pinned)
+            continue;
+        if (name == "Copy Image" && !selectMessage.attachments.some(obj => obj.file_type == "image"))
+            continue;
+        if (name == "Download" && !selectMessage.attachments.length > 0 && selectMessage.voice_file == null && selectMessage.video_file == null)
+            continue;
 
         let act = document.createElement("div");
         let rotate = actions[name].hasOwnProperty("rotate") ? `${actions[name].rotate}deg` : "";
@@ -214,6 +232,21 @@ export function showNotify(notifyText, delay = 3000) {
         }, delay)
     }
 }
+
+function pinMessage() {
+    ws.send(JSON.stringify({
+        action: 'pin-message',
+        messageId: selectMessage.id
+    }))
+    backdrop.click();
+}
+
+function unpinMessage() {
+    ws.send(JSON.stringify({
+        action: 'unpin-message',
+        messageId: selectMessage.id
+    }))
+    backdrop.click();
 }
 
 function downloadFiles() {

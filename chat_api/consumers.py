@@ -16,6 +16,11 @@ from notifications.core import notify
 logger = logging.getLogger(__name__)
 users_in_groups = {}
 
+file_extensions = {
+    "audio": "ogg",
+    "video": "mp4",
+}
+
 
 class ChatConsumer(WebsocketConsumer):
 
@@ -35,6 +40,8 @@ class ChatConsumer(WebsocketConsumer):
             'msg-deletion': self.delete_message,
             'message': self.receive_txt_message,
             'edit-message': self.edit_message,
+            'pin-message': self.pin_action,
+            'unpin-message': self.unpin_action,
         }
 
     def connect(self) -> None:
@@ -59,7 +66,7 @@ class ChatConsumer(WebsocketConsumer):
         if self.room_group_name in users_in_groups:
             users_in_groups[self.room_group_name].discard(self.scope['user'])
 
-    def receive(self, text_data=None, bytes_data=None):
+    def receive(self, text_data=None, bytes_data=None) -> None:
         text_data_json = json.loads(text_data)
         action = text_data_json['action']
         try:
@@ -128,6 +135,12 @@ class ChatConsumer(WebsocketConsumer):
             'chat_messages': MessageSerialize(
                 Message.objects.filter(
                     room=self.room_subscribe
+                ),
+                many=True
+            ).data,
+            'pinned_messages': MessageSerialize(
+                Message.objects.filter(
+                    room=self.room_subscribe, pinned=True
                 ),
                 many=True
             ).data,
