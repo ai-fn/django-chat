@@ -330,3 +330,63 @@ function createEmbededComposer() {
     document.getElementsByClassName('embedded-cancel')[0].addEventListener("click", closeComposerEmbeded);
     setTimeout(() => document.getElementsByClassName('ComposerEmbeddedMessage')[0].classList.add('open'), 50);
 }
+function startMessagesSelection() {
+    backdrop.click();
+    mainContainer.classList.add("select-mode-active");
+    composer.classList.remove("shown");
+    composer.classList.add("hover-disabled");
+    selectToolbar.classList.add("shown");
+
+    let lastMessage = mainContainer.querySelector(`#message${messagesArray[messagesArray.length - 1].id}`);
+    lastMessage.classList.add("last-in-list");
+    let message = mainContainer.querySelector(`#message${selectMessage.id}`);
+
+    selectMessages.push(message);
+    message.classList.add("is-selected");
+    message.querySelector(".message-select-control").insertAdjacentHTML("beforeend", selectedIcon);
+}
+
+function endMessagesSelection() {
+    selectMessages.forEach((el) => {
+        el.querySelector(".message-select-control").innerHTML = "";
+        el.classList.remove("is-selected");
+    })
+    mainContainer.classList.remove("select-mode-active");
+    composer.classList.remove("hover-disabled");
+    composer.classList.add("shown");
+    selectToolbar.classList.remove("shown");
+    selectMessages = [];
+    updateSelectCountLabel(0);
+}
+
+const selectedCountLabel = document.querySelector(".messages-footer .MessageSelectToolbar span");
+function messageSelection(event) {
+    if (mainContainer.classList.contains("select-mode-active")) {
+        let closestMessage = event.target.closest(".Message") || event.target.querySelector(".Message");
+        if (closestMessage.classList.contains("is-selected")) {
+            selectMessages.splice(selectMessages.indexOf(closestMessage), 1);
+            closestMessage.classList.remove("is-selected");
+            closestMessage.querySelector(".message-select-control").innerHTML = "";
+            if (selectMessages.length == 0)
+                endMessagesSelection();
+        } else {
+            selectMessages.push(closestMessage);
+            closestMessage.classList.add("is-selected");
+            closestMessage.querySelector(".message-select-control").insertAdjacentHTML("beforeend", selectedIcon);
+        }
+    }
+    updateSelectCountLabel(selectMessages.length);    
+}
+
+function updateSelectCountLabel(count){
+    let text = `${count > 0 ? count : 1} message${count > 1 ? "s" : ""} selected`;
+    selectedCountLabel.textContent = text;
+    selectedCountLabel.setAttribute("title", text);
+}
+
+function deleteSelectedMessages(){
+    selectMessages.forEach((el) => {
+        deletion(el.getAttribute("data-message-id"));
+    });
+    endMessagesSelection();
+}
