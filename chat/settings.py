@@ -187,15 +187,11 @@ LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'handlers': {
-        'console': {
+        'info_file': {
             'level': 'INFO',
-            'class': 'logging.StreamHandler',
-        },
-        'file': {
-            'level': 'DEBUG',
             'class': 'logging.FileHandler',
-            'filename': 'debug.log',
-            'formatter': 'verbose',
+            'filename': 'logs/info.log',
+            'formatter': 'verbose'
         },
     },
     'formatters': {
@@ -205,10 +201,10 @@ LOGGING = {
     },
     'loggers': {
         '': {
-            'handlers': ['console', 'file'],
-            'level': 'DEBUG',
-            'propagate': True,
-        },
+            'handlers': ['info_file'],
+            'level': 'INFO',
+            'propagate': False
+        }
     },
 }
 
@@ -253,5 +249,4 @@ SOCIAL_AUTH_PIPELINE = (
     'social_core.pipeline.user.user_details',
 )
 
-DEFAULT_ROOM_IMAGE_PATH = 'images/room-images/base-room.png'
 DEFAULT_USER_IMAGE_PATH = 'images/users-avatars/base-user.png'
