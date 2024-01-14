@@ -48,12 +48,24 @@ function sendHandler () {
 export function onPaste (event) {
     event.preventDefault();
     let clipboardData = event.clipboardData || window.clipboardData;
-    let pastedText = clipboardData.getData('text/plain');
-    event.target.innerText += pastedText;
-    
-    resetMsgArea(event.target);
-    updateWrapperSize(event.target);
-    setCursorPos(event.target);
+    let items = clipboardData.items;
+    for (let i = 0; i < items.length; i++){
+        let item = items[i];
+
+        if (item.type.includes('image/')){
+            let file = item.getAsFile();
+            document.querySelector(".Modal.open.shown") ? null : createAttachModal("image/*", false);
+            displayImage("", false, file);
+        }
+        else if (item.type.includes("text/plain")) {
+            let pastedText = clipboardData.getData('text/plain');
+            event.target.innerText += pastedText.trim();
+            
+            resetMsgArea(event.target);
+            updateWrapperSize(event.target);
+            setCursorPos(event.target);
+        }
+    }    
 };
 
 export function onInput (e) {
