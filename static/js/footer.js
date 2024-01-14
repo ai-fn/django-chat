@@ -1,39 +1,55 @@
-import { createAttachModal, displayImage } from "./attachModal.js";
-import { editableMessageText } from "./editMessage.js"; 
+import { createAttachModal, displayImage, readAsDataURL } from "./attachModal.js";
 
 let attachButton = document.getElementById('attach-menu-button');
 let attachControls = document.getElementById('attach-menu-controls');
 let menuContainer = attachControls.childNodes[1];
+
+
 let mediaInput = document.getElementById('media-input');
 let fileInput = document.getElementById('file-input');
 
-attachButton.addEventListener("mouseenter", () => {
+attachButton.addEventListener("mouseenter", showAttachMenu);
+menuContainer.addEventListener("mouseleave", closeAttachMenu);
+
+mediaInput.addEventListener("click", (e) => {
+    createFileInput("image/*, video/*", e, false);
+});
+
+fileInput.addEventListener('click', (e) => {
+    createFileInput("*", e, true);
+});
+
+export function showAttachMenu (e) {
+	let btn = e.target.closest("button");
+	let container = btn.parentElement.querySelector(".Menu.compact .menu-container");
+	let conrtolsContainer = container.parentElement;
+	container.classList.replace('not-shown', 'shown');
     setTimeout(() => {
-        attachButton.classList.add('activated');
+        btn.classList.add('activated');
         let backdrop = document.createElement('div');
         backdrop.classList.add('backdrop');
-        attachControls.insertAdjacentElement("afterbegin", backdrop);
-        menuContainer.classList.replace('not-open', 'open');
-        menuContainer.classList.replace('not-shown', 'shown');    
-    }, 200);    
-});
+		backdrop.addEventListener("click", closeAttachMenu);
+        conrtolsContainer.insertAdjacentElement("afterbegin", backdrop);
+		container.classList.replace('not-open', 'open');
+    }, 50);    
+}
 
-menuContainer.addEventListener("mouseleave", () => {
-    attachButton.classList.remove('activated');
-    attachControls.getElementsByClassName('backdrop')[0].remove();
-    menuContainer.classList.replace('open', 'not-open');
-    menuContainer.classList.replace('shown', 'not-shown');
-});
+export function closeAttachMenu (e) {
+	let btn = e.target.parentElement.previousElementSibling;
+	let container = btn.parentElement.querySelector(".Menu.compact .menu-container");
+	let conrtolsContainer = container.parentElement;
+    
+	container.classList.replace('open', 'not-open');
+	setTimeout(() => {
+		let backdrop = conrtolsContainer.querySelector('.backdrop')
+		if (backdrop != null)
+			backdrop.remove();
+		container.classList.replace('shown', 'not-shown');
+		btn.classList.remove('activated');
+	}, 150)
+};
 
-mediaInput.addEventListener("click", () => {
-    createFileInput({allowedExt: ".jpg, .png, .jpeg"});
-});
-
-fileInput.addEventListener('click', () => {
-    createFileInput({allowedExt: "*"});
-});
-
-function createFileInput({allowedExt}) {
+export function createFileInput(allowedExt, e, asFile) {
     let inp = document.createElement("input");
     inp.type = "file";
 	inp.accept = allowedExt;
