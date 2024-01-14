@@ -1,21 +1,38 @@
 import { drawAudio } from "./audioVisualize.js";
-import { urlify } from "./utils.js";
-import { closeComposerEmbeded, showNotify } from "./contextmenu.js";
+import { getPreviewMessage, setClipStyle, updateClipPath, urlify } from "./utils.js";
+import { scrollToSelectedMessage, showNotify } from "./contextmenu.js";
 import { editableMessageText, resetMsgArea, msgWrapper } from "./editMessage.js";
+import { formatSizeUnits } from "./attachModal.js";
 
+let ws;
 let room;
-export let user;
-let readMessages = [];
-let unreadMessages = [];
+let user;
+let interval;
+let readMessages;
+let messagesArray;
+let unreadMessages;
+let pinnedMessages;
 let isScrolling = false
-let messages = document.getElementById('messages');
-let allMessages = document.querySelectorAll('.message-container');
 
-const url = `ws://${window.location.host}/ws/chat/`;
-export const ws = new WebSocket(url);
 const maxMsgLength = 1600;
+const url = `ws://${window.location.hostname}:8000/ws/chat/${room_pk}`;
 const addMembersBtn = document.getElementById("addMembersBtn");
-export const messagesArray = [];
+const messageList = document.querySelector(".MessageList");
+const messages = document.querySelector('.messages-container');
+
+export { ws, messagesArray, user, send, messages };
+
+addMembersBtn.addEventListener("click", addMembers);
+messageList.addEventListener("wheel", setNearestPinnedMessage);
+
+messages.addEventListener('scroll', () => {
+	clearTimeout(isScrolling)
+
+	isScrolling = setTimeout(() => {
+		isScrolling = false
+	}, 100);
+	handleScroll();
+})
 
 autoReconnect(() => {
 	ws = new WebSocket(url)
