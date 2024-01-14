@@ -10,4 +10,12 @@ try{
   
     reader.readAsDataURL(file);
   });
-} catch {console.log("error")}
+} catch(error) {
+  console.log(error);
+}
+
+function scrollInto(e){
+  let currentFolder = e.target.closest(".Tab");
+  let offset = currentFolder.offsetLeft - (ulFolders.offsetWidth - currentFolder.offsetWidth) / 2;
+  ulFolders.scrollTo({left: offset, behavior: 'smooth' });
+}
