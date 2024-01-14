@@ -233,13 +233,44 @@ class ChatConsumer(WebsocketConsumer):
             msg.first().delete()
             result = "successfully deleted"
             deleted = True
-        logger.debug("Message with id %s %s", msg_id, result)
-        self.send(json.dumps({
-            "action": "msg-deletion",
-            "message": "Message " + result,
-            "msg_id": msg_id,
-            "deleted": deleted
-        }))
+        logger.info("Message with id %s %s", msg_id, result)
+
+        async_to_sync(self.channel_layer.group_send)(
+            self.room_group_name,
+            {
+                "type": "message_deletion",
+                "message": "Message " + result,
+                "msg_id": msg_id,
+                "deleted": deleted
+            }
+        )
+
+    def message_deletion(self, event) -> None:
+        message = event['message']
+        msg_id = event['msg_id']
+        deleted = event['deleted']
+
+        self.send(
+            json.dumps({
+                'deleted': deleted,
+                'message': message,
+                'msg_id': msg_id,
+                'action': "msg-deletion"
+            })
+        )
+
+    def chat_message(self, event) -> None:
+        message = event['message']
+        as_file = event['as_file']
+
+        self.send(
+            json.dumps({
+                'room': self.room_subscribe,
+                'message': message,
+                'as_file': as_file,
+                'action': 'receive'
+            })
+        )
 
     def attach_message(self, text_data_json) -> None:
         message = self.create_message()
