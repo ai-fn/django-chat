@@ -3,7 +3,7 @@
 {% if notifications %}
     {% for notif in notifications %}
 
-        <a class="room-container" href="{% url 'notifications:view' notif.id %}">
+        <a class="notification-container" href="{% url 'notifications:view' notif.id %}">
             <div class="card text-bg-dark border-light bg-color-dark">
                 <div class="cart-title">
                     <span>{{notif.title}}</span>

@@ -23,7 +23,7 @@ def compress_audio(input_file: str, instance) -> None:
 
         command = f'ffmpeg -i {input_file} -b:a 128k -f mp3 -y {result}'
         subprocess.call(command, shell=True)
-        logger.debug("File %s successfully compressed" % input_file)
+        logger.info("File %s successfully compressed" % input_file)
     else:
         logger.info("FFmpeg is not installed")
     with open(result, "rb") as comp_file:
@@ -41,21 +41,24 @@ def compress(input_file: str, instance) -> None:
     if check_ffmpeg_is_installed():
 
         name, ext = os.path.splitext(input_file)
-        result = f"{name}_comp.jpg"
+        result = f"{name}_comp{ext}"
         ffmpeg_command = [
                 "ffmpeg",
                 "-i", input_file,
-                "-q:v", "20",
+                "-crf", "20",
                 result
         ]
-        subprocess.run(ffmpeg_command, shell=True)
-        logger.debug("File %s successfully compressed" % input_file)
+        subprocess.run(ffmpeg_command)
+        logger.info("File %s successfully compressed" % input_file)
     else:
         logger.info("FFmpeg is not installed")
-    with (open(result, "rb") as comp_file):
+    with open(result, "rb") as comp_file:
         new_file = File(comp_file)
         new_filename = os.path.basename(new_file.name)
-        instance.image.save(new_filename, new_file, save=True)
+        if instance.__class__.__name__ == "Attachments":
+            instance.file.save(new_filename, new_file, save=True)
+        else:
+            instance.image.save(new_filename, new_file, save=True)
     os.remove(input_file)
     if input_file != result:
         os.remove(result)
@@ -68,17 +71,16 @@ def check_ffmpeg_is_installed() -> bool:
 
 def get_upload_path(instance, filename: str) -> str:
 
-    if filename in [settings.DEFAULT_USER_IMAGE_PATH, settings.DEFAULT_ROOM_IMAGE_PATH]:
-        return filename
-
     filename = filename.split('\\')[-1]
     filename, ext = os.path.splitext(filename)
     instance_name = instance.__class__.__name__.lower()
-    logger.debug(f"Upload new file: {filename + ext} for {instance}")
+    logger.info(f"Upload new file: {filename + ext} for {instance}")
 
     if instance_name == "message":
         return os.path.join('room', str(instance.room.pk), instance.msg_type, f"{filename}_{instance.pk}{ext}")
+    elif instance_name == "attachments":
+        return os.path.join('room', str(instance.message.room.pk), "attachments", f"{filename}{ext}")
     elif hasattr(instance, "message"):
-        return os.path.join('room', str(instance.message.room.pk), instance.message.msg_type, f"{filename}_{instance.pk}{ext}")
+        return os.path.join('room', str(instance.message.room.pk), instance.message.msg_type, f"{filename}{ext}")
     else:
         return os.path.join(instance_name, str(instance.pk), f"{instance_name}-pic", f"{filename}_{instance.pk}{ext}")

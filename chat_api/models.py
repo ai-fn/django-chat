@@ -7,6 +7,8 @@ from django.core.files.base import ContentFile
 from PIL import Image
 from io import BytesIO
 
+from django.db.models.signals import pre_delete
+from django.dispatch import receiver
 from django.utils.translation import gettext_lazy as _
 from .managers import *
 from .utils import get_upload_path, compress
@@ -27,7 +29,7 @@ class CustomUser(AbstractBaseUser):
     objects = CustomUserManager()
 
     def __str__(self):
-        return f'User__{self.username}'
+        return f'User__{self.username}__{self.pk}'
 
     def has_perm(self, perm, obj=None):
         return self.is_superuser
@@ -79,7 +81,7 @@ class Room(models.Model):
 
     name = models.CharField(null=False, default='unknown_room')
     members = models.ManyToManyField(CustomUser, related_name='Room_User')
-    image = models.ImageField(upload_to=get_upload_path, null=True, default=settings.DEFAULT_ROOM_IMAGE_PATH)
+    image = models.ImageField(upload_to=get_upload_path, null=True)
     created_at = models.DateTimeField(auto_now_add=True, null=False)
     type = models.CharField(choices=Type.choices, default=Type.DIRECT, max_length=6)
     objects = RoomManager()
@@ -116,7 +118,7 @@ class Message(models.Model):
         """ Message types """
         TEXT = 'text', _("text")
         VOICE = 'voice', _("voice")
-        # VIDEO = 'video', _("video")  # coming soon...
+        VIDEO = 'video', _("video")
 
         @classmethod
         def from_old_name(cls, type_name: str) -> object:
@@ -127,7 +129,7 @@ class Message(models.Model):
             name_map = {
                 "TEXT": cls.TEXT,
                 "VOICE": cls.VOICE,
-                # "VIDEO": cls.VIDEO,  # coming soon...
+                "VIDEO": cls.VIDEO,
             }
             try:
                 return name_map[type_name]
@@ -142,16 +144,19 @@ class Message(models.Model):
     sent_at = models.DateTimeField(auto_now_add=True, null=False)
     users_read = models.ManyToManyField(CustomUser, related_name='users_read')
     room = models.ForeignKey(Room, on_delete=models.CASCADE, related_name='room_message')
+    reply_to = models.ForeignKey("Message", null=True, on_delete=models.deletion.SET_NULL, related_name="message_replies")
+    attachment_messages = models.ManyToManyField("Message", related_name="attach_messages")
     pinned = models.BooleanField(default=False, null=False)
     edited = models.BooleanField(default=False, null=False)
     edited_at = models.DateTimeField(null=True)
+    as_file = models.BooleanField(default=False)
     objects = MessageManager()
 
     class Meta:
         ordering = ("sent_at", )
 
     def __str__(self):
-        return f'{self.msg_type}-message from {self.sender} in {self.room} room'
+        return f'{self.msg_type}-message {self.pk} from {self.sender} in {self.room} room'
 
 
 class Attachments(models.Model):

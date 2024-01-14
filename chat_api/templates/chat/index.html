@@ -78,9 +78,11 @@
     {% endblock %}
     
     {% block styles %}
-        <link rel="stylesheet" type="text/css" href="{% static 'css/Users.css' %}">
-        <link rel="stylesheet" type="text/css" href="{% static 'css/Rooms.css' %}">
         <link rel="stylesheet" type="text/css" href="{% static 'css/Audio.css' %}">
+        <link rel="stylesheet" type="text/css" href="{% static 'css/PinnedMessage.css' %}">
+        <link rel="stylesheet" type="text/css" href="{% static 'css/HeaderPinnedMessage.module.css' %}">
+        <link rel="stylesheet" type="text/css" href="{% static 'css/Audio.css' %}">
+        <link rel="stylesheet" type="text/css" href="{% static 'css/MessageList.css' %}">
         <link rel="stylesheet" type="text/css" href="{% static 'css/Composer.css' %}">
         <link rel="stylesheet" type="text/css" href="{% static 'css/ContextMenu.css' %}">
         <link rel="stylesheet" type="text/css" href="{% static 'css/Footer.css' %}">
@@ -94,19 +96,26 @@
         <link rel="stylesheet" type="text/css" href="{% static 'css/Notification.css' %}">
         <link rel="stylesheet" type="text/css" href="{% static 'css/EmbededMessage.css' %}">
         <link rel="stylesheet" type="text/css" href="{% static 'css/ComposerEmbededMessage.css' %}">
+        <link rel="stylesheet" type="text/css" href="{% static 'css/MessageSelectToolbar.css' %}">
         <link rel="stylesheet" type="text/css" href="{% static 'css/Modal.css' %}">
         <link rel="stylesheet" type="text/css" href="{% static 'css/Album.css' %}">
         <link rel="stylesheet" type="text/css" href="{% static 'css/File.css' %}">
         <link rel="stylesheet" type="text/css" href="{% static 'css/BundleMain.css' %}">
         <link rel="stylesheet" type="text/css" href="{% static 'css/AttachmentModal.css' %}">
+        <link rel="stylesheet" type="text/css" href="{% static 'css/form-check.css' %}">
     {% endblock %}
 
     {% block content %}
-        {% include 'index/room-header.html' with room=room %}
-            <div class="main-container d-flex">
-                <div id="messages"></div>
+    <div class="messages-layout">
+        <div class="Transition">
+            <div class="Transition_slide Transition_slide-active">
+                <div class="MessageList custom-scroll">
+                    <div class="messages-container"></div>
+                </div>
                 {% include 'index/footer.html' %}
             </div>
+        </div>
+    </div>
     {% endblock %}
 
 {% block scripts %}

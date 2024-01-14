@@ -38,7 +38,7 @@ def show_errors(request, form) -> None:
         for error in errors:
             message = error['message']
             messages.warning(request, _(message))
-            logger.info("Got an invalid %s form: %s", form.__class__.__name__, message)
+            logger.warning("Got an invalid %s form: %s", form.__class__.__name__, message)
 
 
 class LoginView(APIView):
@@ -51,6 +51,8 @@ class LoginView(APIView):
         if request.user.is_anonymous:
             form = LoginForm()
             return render(request, 'index/login.html', context={'form': form})
+        logger.info("User %s tried to login" % request.user)
+        messages.info(request, _("You are already logged in"))
         return redirect("chats")
 
     @staticmethod
@@ -88,6 +90,8 @@ class RegisterView(APIView):
         if request.user.is_anonymous:
             form = RegisterForm()
             return render(request, 'index/register.html', {'form': form})
+        logger.info("User %s tried to login" % request.user)
+        messages.info(request, _("You are already logged in"))
         return redirect("chats")
 
     @staticmethod
@@ -121,7 +125,7 @@ class LogoutView(APIView):
     """
 
     @staticmethod
-    def post(request):
+    def get(request):
         if not request.user.is_anonymous:
             logger.info("Logout user %s" % request.user)
             logout(request)
@@ -136,7 +140,7 @@ class EmailVerifyView(APIView):
     """
 
     def get(self, request, uid64, token):
-        user = self.get_user(uid64)
+        user = self.get_user(request.user, uid64)
         if user is not None and settings.DEFAULT_TOKEN_GENERATOR.check_token(user, token):
             login(request, user)
             user.is_email_confirmed = True
@@ -149,11 +153,12 @@ class EmailVerifyView(APIView):
         return redirect('login')
 
     @staticmethod
-    def get_user(uid64):
+    def get_user(user, uid64):
         try:
             uid = urlsafe_base64_decode(uid64).decode()
             user = CustomUser.objects.get(pk=uid)
-        except (TypeError, ValueError, OverflowError, CustomUser.DoesNotExist):
+        except (TypeError, ValueError, OverflowError, CustomUser.DoesNotExist) as e:
+            logger.warning(f"User %s tried to verify email, but got error %s", user, e)
             user = None
         return user
 
@@ -164,6 +169,7 @@ class ChatsView(APIView):
 
     @staticmethod
     def get(request):
+        logger.info("Chats view called by user %s" % request.user)
         user = request.user
         create_room_form = CreateRoomForm()
 
@@ -178,7 +184,7 @@ class ChatsView(APIView):
             'folders': folders,
             'user': UserSerialize(request.user).data,
             'unread': Notification.objects.filter(user=user, viewed=0),
-            'friends': UserSerialize(user.Friends, many=1).data,
+            'friends': UserSerialize(user.Friends, many=True).data,
             'create_room_form': create_room_form,
         })
 
@@ -189,6 +195,7 @@ class ChatView(APIView):
 
     @staticmethod
     def get(request, room_id):
+        logger.info("User %s entered into room with pk %s", request.user, room_id)
         room = get_object_or_404(Room, pk=room_id)
         user = request.user
         chat_messages = MessageSerialize(Message.objects.filter(room=room_id), many=True).data
@@ -215,7 +222,7 @@ class DirectView(APIView):
             ).filter(members=request.user.pk)[0]
         except IndexError:
             room = Room.objects.create(name="Direct with %s" % user.username, type=Room.Type.DIRECT)
-            logger.info("Room %s created by %s", room, request.user)
+            logger.info("Direct room %s created by %s", room, request.user)
             room.members.add(user.user_id, request.user.user_id)
         return redirect('direct', room_id=room.id)
 
@@ -232,7 +239,7 @@ class DirectView(APIView):
             'members': users,
             'unread': Notification.objects.filter(user=request.user, viewed=False)
         }
-        logger.info("Open chat %s by %s", room, request.user)
+        logger.info("Direct room with pk %s opened  by %s", room.id, request.user)
         return render(request, 'chat/index.html', context=context)
 
 
@@ -249,7 +256,6 @@ class CreateRoom(APIView):
             room_name = form.cleaned_data['room_name']
             new_room = Room.objects.create(name=room_name, type=Room.Type.CHAT)
             if form.cleaned_data['room_img']:
-                print(type(form.cleaned_data['room_img']))
                 new_room.image = form.cleaned_data['room_img']
                 new_room.save()
                 compress(new_room.image.path, new_room)
@@ -272,7 +278,7 @@ class RemoveFriend(APIView):
         user = request.user
         user.Friends.remove(user_id)
         user.save()
-        logger.info("User %s successfully delete user %s from friends list", user, user_id)
+        logger.info("User with pk %s successfully delete user %s from friends list", user.pk, user_id)
         return redirect('chats')
 
 
@@ -283,6 +289,7 @@ class Users(APIView):
 
     @staticmethod
     def get(request):
+        logger.info("User with pk %s called search users view" % request.user.pk)
         return render(request, 'index/users.html', context={
             'user': UserSerialize(request.user).data,
             'users': UserSerialize(CustomUser.objects.filter(~Q(pk=request.user.pk)), many=True).data,
@@ -301,6 +308,7 @@ class ProfileView(APIView):
 
     @staticmethod
     def get(request, user_id: int):
+        logger.info("User with pk %s called profile view for user with pk %s", request.user.pk, user_id)
         user_profile = CustomUser.objects.get(pk=user_id)
         context = {
             'user': UserSerialize(request.user).data,
@@ -308,34 +316,21 @@ class ProfileView(APIView):
             'friends': UserSerialize(user_profile.Friends.all(), many=True).data,
             'unread': Notification.objects.filter(user=request.user, viewed=0),
         }
-        if user_profile.user_id == request.user.user_id:
-            context['upd_prof_img'] = UpdProfImg()
-            context['form'] = UpdateUserInfoForm(instance=user_profile)
-            context['requests'] = FriendRequest.objects.filter(user_to=request.user, status=FriendRequest.Status.SENT)
-        else:
-            context['form'] = UpdateUserInfoForm(instance=user_profile, disabled=True)
         return render(request, 'index/profile.html', context=context)
 
     @staticmethod
     def post(request, user_id):
-        form = UpdateUserInfoForm(request.data, instance=request.user)
-        if form.is_valid():
-            form.save()
+        user = request.user
+        avatar = request.FILES.get("Avatar")
+        user.First_Name = request.POST.get("First_Name")
+        user.Second_Name = request.POST.get("Second_Name")
+        user.username = request.POST.get("username")
+        if avatar is not None and user.Avatar != avatar:
+            user.Avatar = avatar
+        user.save()
+        logger.info("User with pk %s successfully update profile info" % user_id)
+        messages.success(request, _("Info successfully updated!"))
         return redirect('profile', user_id=user_id)
-
-
-class UpdProfImage(APIView):
-    """Update profile image endpoint"""
-    permission_classes = [IsAuthenticated, ]
-
-    @staticmethod
-    def post(request):
-        form_upd_prof_img = UpdProfImg(data=request.data, files=request.FILES)
-        if form_upd_prof_img.is_valid():
-            img = form_upd_prof_img.cleaned_data['img']
-            request.user.Avatar = img
-            request.user.save()
-        return redirect('profile', user_id=request.user.user_id)
 
 
 class CreateFolder(APIView):
@@ -434,7 +429,7 @@ def _send_verify_email(
     """
     context = _generate_unique_code(request, user)
     body = loader.render_to_string(email_template_name, context)
-    res = send_mail('Confirm email [chat-pet-project.ru]',
+    res = send_mail('Confirm email [chat-pet-project.com]',
                     body,
                     settings.EMAIL_HOST_USER,
                     [user.email, ],
@@ -443,8 +438,8 @@ def _send_verify_email(
                     settings.EMAIL_HOST_PASSWORD
                     )
     if res:
-        messages.success(request, _('Message successfully sent'))
-        logger.debug('Confirmation code successfully sent for user %s' % request.user)
+        messages.success(request, _('Message successfully sent, confirm it at %s' % user.email))
+        logger.info('Confirmation code successfully sent for user %s' % request.user)
     else:
         messages.error(request, _('Message sent failed'))
         logger.warning('Confirmation code sent failed for user %s' % request.user)
@@ -478,6 +473,11 @@ def _generate_unique_code(
 class SearchUsers(APIView):
 
     @staticmethod
+    def get(request, user_id):
+        friends = UserSerialize(CustomUser.objects.filter(Friends=user_id), many=True).data
+        return render(request, 'index/users.html', context={"friends": friends, "search_form": SearchForm()})
+
+    @staticmethod
     def post(request):
         form = SearchForm(data=request.data)
         if form.is_valid():
@@ -498,7 +498,8 @@ class SearchUsers(APIView):
                     'request_sent_for': FriendRequest.objects.requests_sent_for(request.user.pk)
                 }
             )
-        logger.debug("Got an invalid search form from %s" % request.user)
+        show_errors(request, form)
+        logger.info("Got an invalid search form from %s" % request.user)
         return redirect('users')
 
 
@@ -509,5 +510,5 @@ class ResendConfirmMessage(APIView):
         email = request.data.get('email')
         user = get_object_or_404(CustomUser, email=email)
         _send_verify_email(request, user)
-        logger.debug("Resend confirm message for user %s" % user)
+        logger.info("Resend confirm message for user with pk %s" % user.pk)
         return redirect('login')

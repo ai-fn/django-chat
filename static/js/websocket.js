@@ -230,31 +230,30 @@ function setPinnedMessage(selectMessage) {
 			<div class="uhn_g6FmUELuGJrCm45w">
 				<div class="II9Qj_b_XQlgwGAOoy7u">
 					<div class="sNpxwL0ihB0aXnfphNmp" style="clip-path: url(&quot;#clipPath&quot;); width: 2px; height: 74px; transform: translateY(0px);">
-							<div class="YX_iyQuDtga6uKXRQqR0" style="--height: 7.5px; --translate-y: 9.5px; --translate-track: 0px; height: 7.5px; transform: translateY(9.5px);">
-						
-							</div>
-							<span><svg height="0" width="0"><defs><clipPath id="clipPath"><path></path></clipPath></defs></svg></span>
+						<div class="YX_iyQuDtga6uKXRQqR0" style="--height: 7.5px; --translate-y: 9.5px; --translate-track: 0px; height: 7.5px; transform: translateY(9.5px);">
+					
 						</div>
+						<span><svg height="0" width="0"><defs><clipPath id="clipPath"><path></path></clipPath></defs></svg></span>
 					</div>
-					<div class="Transition EK6juGhJwhsLLm4Aag2F">
-						<div class="Transition_slide Transition_slide-active" data-message-id="${selectMessage.id}">
-							<div class="RFnmHP92f6CwfuR2Upaw"></div>
-						</div>
-						<div class="Transition_slide Transition_slide-inactive">
-							<div class="RFnmHP92f6CwfuR2Upaw"></div>
-						</div>
+				</div>
+				<div class="Transition EK6juGhJwhsLLm4Aag2F">
+					<div class="Transition_slide Transition_slide-active" data-message-id="${selectMessage.id}">
+						<div class="RFnmHP92f6CwfuR2Upaw"></div>
 					</div>
-					<div class="bSvmca5kaTIUh3yJBxnF">
+					<div class="Transition_slide Transition_slide-inactive">
+						<div class="RFnmHP92f6CwfuR2Upaw"></div>
+					</div>
+				</div>
+				<div class="bSvmca5kaTIUh3yJBxnF">
 					<div class="q9_FnsHlndM1hZqZjxjM" dir="auto">
 						<span class="Tx2CpCmpZZrHnCMUksg2">Pinned Message</span>
 					</div>
-					<div class="Transition ugsKEK4Xb166oFMP8hHy">
-						<div class="Transition_slide Transition_slide-active" data-message-id="${selectMessage.id}">
-							<p dir="auto" class="WRuyhyQK6mv28Mz8iK28"></p>
-						</div>
-						<div class="Transition_slide Transition_slide-inactive">
-							<p dir="auto" class="WRuyhyQK6mv28Mz8iK28"></p>
-						</div>
+				<div class="Transition ugsKEK4Xb166oFMP8hHy">
+					<div class="Transition_slide Transition_slide-active" data-message-id="${selectMessage.id}">
+						<p dir="auto" class="WRuyhyQK6mv28Mz8iK28"></p>
+					</div>
+					<div class="Transition_slide Transition_slide-inactive">
+						<p dir="auto" class="WRuyhyQK6mv28Mz8iK28"></p>
 					</div>
 				</div>
 				<div class="ripple-container"></div>
@@ -393,45 +392,45 @@ function setNearestPinnedMessage(event){
 	}
 }
 
-function markMessagesAsRead(){
-    let mbMsgs = readMessages.filter(item => item.users_read.length != 0 &&  !item.users_read.includes(user))
-    if (mbMsgs.length != 0){
-        mbMsgs.forEach((item) => unreadMessages.push(item))
-    }
-    ws.send(
-        JSON.stringify({
-            'action': 'mark_msg_as_read',
-            'chat_messages': unreadMessages,
-        })
-    )
-    unreadMessages = []
+function markMessagesAsRead() {
+	let mbMsgs = readMessages.filter(item => item.users_read.length != 0 && !item.users_read.includes(user))
+	if (mbMsgs.length != 0) {
+		mbMsgs.forEach((item) => unreadMessages.push(item))
+	}
+	ws.send(
+		JSON.stringify({
+			'action': 'mark_msg_as_read',
+			'chat_messages': unreadMessages,
+		})
+	)
+	unreadMessages = []
 }
 
 function addMembers() {
-    let members = []
-    const checkBoxes = document.querySelectorAll('input[type="checkbox"]:checked')
+	let members = []
+	const checkBoxes = document.querySelectorAll('input[type="checkbox"]:checked')
 
-    checkBoxes.forEach(el => {
-        members.push(el.nextElementSibling.textContent)
-    })
+	checkBoxes.forEach(el => {
+		members.push(el.nextElementSibling.textContent)
+	})
 
-    checkBoxes.forEach(el => {el.checked = false })
-    if (members.length !== 0){
-        ws.send(JSON.stringify({
-        "action": "add-member",
-        "members": members,
-            })
-        )
-    }
+	checkBoxes.forEach(el => { el.checked = false })
+	if (members.length !== 0) {
+		ws.send(JSON.stringify({
+			"action": "add-member",
+			"members": members,
+		})
+		)
+	}
 }
 
-function getChatNotify(msg, extraClass=""){
-    messages.insertAdjacentHTML(
-            'beforeend',
-        `<div class="chat-notify">
-            <span class="${extraClass}">${msg}</span>
-        </div>`
-    )
+function getChatNotify(msg, extraClass = "") {
+	messages.insertAdjacentHTML(
+		'beforeend',
+		`<div class="chat-notify">
+		<span class="${extraClass}">${msg}</span>
+	</div>`
+	)
 }
 function getMesg(msg, unread = false, sent = false, asFile = false) {
 	if (msg.body != null && msg.body.length > 0)
@@ -596,37 +595,36 @@ function send() {
 
     const msg = editableMessageText.innerText.trim();
 
-    if (msg.length == 0)
-        return
-    
-    msg.length > maxMsgLength ? splitSend(msg) : sendMsg(msg);
-    editableMessageText.innerText = '';
-    resetMsgArea(editableMessageText);
-    msgWrapper.style.height = "2.5rem";
-    messages.scrollTo(0, messages.scrollHeight, 'smooth');
+	if (msg.length == 0)
+		return
+
+	msg.length > maxMsgLength ? splitSend(msg) : sendMsg(msg);
+	editableMessageText.innerText = '';
+	resetMsgArea(editableMessageText);
+	msgWrapper.style.height = "2.5rem";
+	messages.scrollTo(0, messages.scrollHeight, 'smooth');
 }
 
 function splitSend(text) {
 
-    if (text.length > maxMsgLength){
-        while (text.length > maxMsgLength){
-            let msg = text.length >= maxMsgLength ? text.substring(0, maxMsgLength) : text;
-            text = text.substring(maxMsgLength, text.length);
-            sendMsg(msg);
-        }
-    }
-    sendMsg(text);
+	if (text.length > maxMsgLength) {
+		while (text.length > maxMsgLength) {
+			let msg = text.length >= maxMsgLength ? text.substring(0, maxMsgLength) : text;
+			text = text.substring(maxMsgLength, text.length);
+			sendMsg(msg);
+		}
+	}
+	sendMsg(text);
 }
 
 function sendMsg(msg) {
-    if (msg.length === 0) {
-        wrapper.style.height = "2.5rem";
-        return
-    }
-    ws.send(JSON.stringify({
-        pk: room_pk,
-        action: "message",
-        message: msg,
-    }))
-    
+	if (msg.length === 0) {
+		wrapper.style.height = "2.5rem";
+		return
+	}
+	ws.send(JSON.stringify({
+		pk: room_pk,
+		action: "message",
+		message: msg,
+	}))
 }

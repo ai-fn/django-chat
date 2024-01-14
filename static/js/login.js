@@ -1,10 +1,12 @@
+import { setClassesToInputParentDiv, inputIsTouched } from "./utils.js";
+
 const confEmailAlert = document.getElementById("Confirm email for log in")
-const resendButton = document.getElementById('resendButton');
-let el = document.getElementsByClassName('cont')[0]
-let btn = document.getElementById('resendConfirmMessageBtn');
-el.style.backgroundColor = 'transparent'
-el.style.border = 'none'
-if (confEmailAlert) {
+const resendButton = document.querySelector('#resendButton');
+const inputs = document.querySelectorAll("div input.form-control");
+const btn = document.querySelector('#resendConfirmMessageBtn');
+
+
+if (confEmailAlert && btn)
     btn.style.display = "block";
 } else { btn.style.display = "none"; }
 
@@ -36,9 +38,7 @@ function handleResendClick() {
     }, 1000);
 }
 
-resendButton.addEventListener('click', handleResendClick)
-
-window.addEventListener('load', () => {
+function onLoad () {
     const resendButton = document.getElementById('resendButton');
     const disabledUntil = localStorage.getItem('resendButtonDisabledUntil');
 
@@ -68,4 +68,4 @@ window.addEventListener('load', () => {
         localStorage.removeItem('resendButtonDisabledUntil');
       }
     }
-});
+};

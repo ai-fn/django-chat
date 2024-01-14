@@ -1,9 +1,20 @@
 {% extends 'index/base.html' %}
 {% load static %}
+{% load chat_api_tags %}
 
 {% block header %}
 {% include 'index/header.html' %}
 {% endblock %}
+
+
+{% block styles %}
+<link rel="stylesheet" href="{% static 'css/ProfilePhoto.css' %}">
+<link rel="stylesheet" href="{% static 'css/ProfileInfo.css' %}">
+<link rel="stylesheet" href="{% static 'css/AvatarEditable.css' %}">
+<link rel="stylesheet" href="{% static 'css/Settings.css' %}">
+<link rel="stylesheet" href="{% static 'css/forms.css' %}">
+{% endblock %}
+
 
 {% block modal %}
 <!-- Modal for confirm action -->
@@ -32,55 +43,136 @@
 
 
 {% block content %}
-
-<form class="form-1" enctype="multipart/form-data" method="post" action="{% url 'upd-prof-img' %}">
-    {% csrf_token %}
-    <div id="avatarImage" style="background-image: url({{ user_profile.Avatar }})"></div>
-    {% if not form.disabled %}
-      {{ upd_prof_img.as_p }}
-      <button type="submit" class="inp btn btn-secondary">Submit</button>
-    {% endif %}
-</form>
-    
-
-<form class="form-1" action="{% url 'profile' user.user_id %}" method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    {% if not form.disabled %}
-    <button type="submit" class="inp btn btn-secondary">Sumbit</button>
-    {% endif %}
-</form>
-
-<div style="margin-top: 30px;">
-  <div class="head text-center d-flex ">
-    <h5 class="text-bg-dark text-center">Friends list <span class="small-text">{{ friends|length }}</span></h5>
-    {% if not form.disabled %}
-      <a href="{% url 'friend_requests:list' %}">Requests <span class="small-text">{{ requests|length }}</span></a>
-    {% endif %}
-  </div>
-  <div class="friends">
-    <div class="scroll-friends d-flex">
-      {% for user in friends %}
-      <a href="{% url 'profile' user.user_id %}">
-        <div class="bg-transparent card text-bg-dark d-flex justify-content-center align-items-center" style="padding: 10px 0;">
-          <div class="avatar small" style="background-image: url({{ user.Avatar }});"></div>
-          <div class="catd-footer">{{ user.First_Name }}</div>
-        </div>
-      </a>
-      {% endfor %}
-    </div>
-  </div>
+<div class="Transition_slide Transition_slide-active">
+	<div id="Settings" class="Transition">
+		<div class="MiddleColumn-profile">
+			<div class="Transition_slide Transition_slide-active">
+				<div class="settings-content custom-scroll">
+					<div class="settings-main-menu">
+						<div class="ProfileInfo M4GWpBd7i7ViA2xNTvH4">
+							<div class="YvztuUsksHhhNiXGWWbN">
+								<div class="Transition">
+									<div class="Transition_slide Transition_slide-active">
+										{% if user.Avatar %}
+											<div class="ProfilePhoto peer-color-3">
+												<a href="{{ user_profile.Avatar }}" data-lightbox="room-{{ user_profile.user_id }}">
+													<img src="{{ user_profile.Avatar }}" draggable="false" class="avatar-media opacity-transition slow open shown">
+												</a>
+										{% else %}
+											<div class="ProfilePhoto peer-color-3 no-photo">
+												{% first_letter user.username %}
+										{% endif %}
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="uHKuP7J67YWxko9FiDo9" dir="auto">
+								<div class="title ysHMmXALnn0fgFRc7Bn7">
+									<h3 dir="auto" role="button" class="fullName nq7wdidGAlDZRU8k5YjA wRQ44EzvWVlpm3M3sEPu">{{ user_profile.username }}</h3>
+								</div>
+							</div>
+						</div>
+						<div class="ChatExtra">
+							<div class="ListItem has-ripple narrow multiline">
+								<div class="ListItem-button" role="button" tabindex="0">
+									<i class="icon fa-solid fa-at"></i>
+									<div class="multiline-item">
+										<span class="title" dir="auto">{{ user_profile.username }}</span>
+										<span class="subtitle">Username</span>
+									</div>
+									<div class="ripple-container"></div>
+								</div>
+							</div>
+						</div>
+						{% if user.user_id == user_profile.user_id %}
+							<div class="ListItem">
+								<a class="ListItem-button" role="button" tabindex="0" style="justify-content: flex-start;">
+									<i class="icon fa-solid fa-pen"></i>
+									<span>Edit profile</span>
+								</a>
+							</div>
+							<div class="ListItem">
+								<a class="ListItem-button" href="{% url 'friend_requests:list' %}" role="button"
+								 tabindex="0" style="justify-content: flex-start;">
+								 	<i class="icon fa-solid fa-user-plus"></i>
+									<span>Friend requests</span>
+								</a>
+							</div>
+						{% endif %}
+					</div>
+					
+					<div class="setting-main-menu" style="margin: 0.5rem;">
+						<div class="ListItem">
+							<a class="ListItem-button" href="{% url 'friends' user_profile.user_id %}" role="button"
+							 tabindex="0" style="justify-content: flex-start;">
+								<i class="icon fa-solid fa-users"></i>
+								<span>Friends</span>
+							</a>
+						</div>
+						{% if user.user_id == user_profile.user_id %}
+							<div class="ListItem">
+								<a class="ListItem-button" role="button" href="{% url 'logout' %}"
+								tabindex="0" style="justify-content: flex-start;">
+									<i class="icon fa-solid fa-arrow-right-from-bracket"></i>
+									<span>Logout</span>
+								</a>
+							</div>
+						{% endif %}
+					</div>
+				</div>
+			</div>
+			<div class="Transition_slide Transition_slide-inactive">
+				<div class="edit-header">
+					<button type="button" class="Button smaller translucent round" aria-label="Go back" title="Go back">
+						<i class="icon fa-solid fa-arrow-left"></i>
+					</button>
+					<h3>Edit profile</h3>
+				</div>
+				<div class="settings-fab-wrapper">
+					<div class="settings-content no-border custom-scroll">
+						<div class="settings-edit-profile settings-item">
+							<div class="AvatarEditable">
+								<label class="filled" role="button" tabindex="0" title="Edit your profile photo">
+									<input type="file" accept="image/png, image/jpeg">
+									<i class="icon fa-solid fa-camera" style="font-size: 2rem;"></i>
+									{% if user.Avatar %}									
+										<img src="{{ user.Avatar }}" draggable="false" alt="Avatar"></label>
+									{% else %}
+										{% first_letter user.username %}
+									{% endif %}
+								</div>
+								<div class="input-group touched with-label">
+									<input class="form-control" id="First_Name" type="text" dir="auto" aria-label="First name (required)" required value="{{ user.First_Name }}"><label>First name (required)</label>
+								</div>
+								<div class="input-group with-label">
+									<input class="form-control" id="Second_Name" type="text" dir="auto" aria-label="Last name (optional)" value="{{ user.Second_Name }}"><label>Last name (optional)</label>
+								</div>
+							</div>
+							<div class="settings-item">
+								<h4 class="settings-item-header">Username</h4>
+								<div class="input-group touched with-label">
+									<input class="form-control" id="username" type="text" dir="auto" aria-label="Username" value="{{ user.username }}">
+									<label>Username</label>
+								</div>
+							</div>
+						</div>
+						<button type="button" class="Button FloatingActionButton default primary round" aria-label="Save" title="Save" tabindex="-1">
+							<i class="icon fa-solid fa-check"></i>
+							<form action="{% url 'profile' user.user_id %}" style="display: none;" method="post">
+								{% csrf_token %}
+							</form>
+						</button>
+					</div>
+				</div>
+		</div>
+	</div>
 </div>
-
-{% if user_profile.user_id in user.Friends %}
-<div class="remove-from-friends d-flex justify-content-center">
-  <button type="button" data-bs-toggle="modal" data-bs-target="#confirmActionModal" style="color: gray; border: #6666 1px solid; width: 40%;" class="nav-link btn btn-danger" data>Remove friend</button>
-</div>
-{% endif %}
-
 {% endblock %}
 
 {% block scripts %}
-<script src="{% static 'js/profile.js' %}"></script>
+<script type="module" src="{% static 'js/profile.js' %}"></script>
+<script>
+	const userInfo = {"username": "{{ user.username }}", "First_Name": "{{ user.First_Name }}", "Second_Name": "{{ user.Second_Name }}", "Avatar": "{{ user.Avatar }}"};
+	const updateUrl = "{% url 'profile' user.user_id %}";
+</script>
 {% endblock %}
-  

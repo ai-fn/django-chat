@@ -16,7 +16,6 @@ urlpatterns = [
     path('create-chat/', CreateRoom.as_view()),
     path('users/', Users.as_view(), name='users'),
     path('profile/<int:user_id>/', ProfileView.as_view(), name='profile'),
-    path('update-profile-image/', UpdProfImage.as_view(), name='upd-prof-img'),
     path('create-folder/', CreateFolder.as_view(), name='create-folder'),
     path('remove-friend/', RemoveFriend.as_view(), name='remove-friend'),
     path('remove-folder/', RemoveFolder.as_view(), name='remove-folder'),
@@ -24,5 +23,6 @@ urlpatterns = [
     path('remove-room-from-folder/', RemoveRoomFromFolder.as_view(), name='remove-room-from-folder'),
     path('add-room-to-folder/', AddToFolder.as_view(), name='add-room-to-folder'),
     path('search-users/', SearchUsers.as_view(), name='search-users'),
+    path('search-users/<int:user_id>/', SearchUsers.as_view(), name='friends'),
     path('resend-confirm-message/', ResendConfirmMessage.as_view(), name='resend-confirm-message'),
 ]

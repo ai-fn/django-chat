@@ -8,8 +8,14 @@
 {% endblock %}
 
 {% block styles %}
-    <link rel="stylesheet" type="text/css" href="{% static 'css/Users.css' %}">
-    <link rel="stylesheet" type="text/css" href="{% static 'css/Rooms.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/forms.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/MessageList.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/Chat.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/ChatFolders.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/Tab.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/TabList.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/LastMessageMeta.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/NewChatButton.css' %}">
 {% endblock %}
 
 {% block modal %}
@@ -22,12 +28,16 @@
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
             <div class="modal-body">
-                <div class="roomImgPrev" id="roomImgPrev"></div>
+                <div style="display: flex; justify-content: center; margin-bottom: 1.5rem;">
+                    <div class="Avatar size-large peer-color-3 no-photo room-preview">
+                        <div class="inner">-</div>
+                    </div>
+                </div>
                 <form class="create-room-form" enctype="multipart/form-data" method="post" action="{% url 'create-chat' %}">
                     {% csrf_token %}
-                    {{ create_room_form.as_p }}
-                    <button style="margin: 10px 1.5rem;" type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button style="margin: 0px 1.5rem;" type="submit" class="btn btn-success">Create room</button>
+                    {{ create_room_form.as_div }}
+                    <button style="margin: 10px 0;" type="button" class="Button translucent danger" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="Button translucent success">Create room</button>
                 </form>
             </div>
         </div>
@@ -45,9 +55,12 @@
             <div class="modal-body">
                 <form class="add-folder-form" method="post" action="{% url 'create-folder' %}">
                     {% csrf_token %}
-                    <input class="form-control text-bg-dark" style="margin-bottom: 10px;" placeholder="folder name" type="text" name="folder-name" id="folder" required>
-                    <button style="margin: 10px 1.5rem;" type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button style="margin: 0px 1.5rem;" class="btn btn-success" type="submit">Add</button>
+                    <div class="input-group with-label">
+                        <input class="form-control" type="text" name="folder-name" id="folder" required>
+                        <label for="folder">Folder name</label>
+                    </div>
+                    <button type="button" class="Button translucent danger" data-bs-dismiss="modal" style="margin: 10px 0;">Close</button>
+                    <button class="Button translucent success" type="submit">Add</button>
                 </form>
             </div>
         </div>
@@ -71,34 +84,35 @@
 {% endblock %}
 
 {% block content %}
-<div class="main-container">
-    <div class="folders d-flex">
-        {% include 'index/folders.html' with folders=folders %}
-        <div class="create-room">
-            <span style="color: gray;">No rooms yet?</span>
-            <a class="create-room-btn" type="button" data-bs-toggle="modal" data-bs-target="#createRoomModal" title="Create room">Create room</a>
-            <a data-bs-toggle="modal" title="New direct" data-bs-target="#newDirectModal">
-                <i class="big-icon fa-regular fa-comment-dots"></i>
-            </a>
+<div class="MiddleColumn-rooms">
+    <div class="Transition">
+        <div class="ChatFolders Transition_slide Transition_slide-active">
+            <div class="Transition">
+                <div class="yh3gh5jgbv4s6dhtk">
+                    {% include "index/folders.html" with folders=folders %}
+                    <div style="margin-right: 1rem;">
+                        <span style="color: gray;">No rooms yet?</span>
+                        <a class="create-room-btn" type="button" data-bs-toggle="modal" data-bs-target="#createRoomModal" title="Create room">Create room</a>
+                    </div>
+                </div>
+                <div class="Transition Transition-slideOptimized">
+                    {% include "index/folders_partial.html" with rooms=rooms folders=folders name="all" %}
+
+                    {% for folder in folders %}
+                        {% include "index/folders_partial.html" with rooms=folder.rooms folders=folders rm_rooms=True name=folder.name %}
+                    {% endfor %}
+                </div>
+            </div>
         </div>
     </div>
-
-
-    <div class="tab-content" id="pills-tabContent">
-        <div class="tab-pane fade show active" id="pills-all" role="tabpanel" aria-labelledby="pills-all-tab" tabindex="0">
-            {% include "index/folders_partial.html" with rooms=rooms folders=folders %}
-        </div>
-        {% for folder in folders %}
-            {% with name=folder.name %}
-                <div class="tab-pane fade" id="pills-{{ name|join:'' }}" role="tabpanel" aria-labelledby="pills-{{ name|join:'' }}-tab" tabindex="0">
-                    {% include "index/folders_partial.html" with rooms=folder.rooms folders=folders rm_rooms=True %}
-                </div>
-            {% endwith %}
-        {% endfor %}
+    <div class="NewChatButton">
+        <button type="button" data-bs-toggle="modal" data-bs-target="#newDirectModal" class="Button default primary round" aria-label="New Message" title="New Message" tabindex="-1">
+            <i class="icon fa-solid fa-pen"></i>
+        </button>
     </div>
 </div>
 
 {% endblock %}
 {% block scripts %}
-    <script src="{% static 'js/rooms.js' %}"></script>
+    <script type="module" src="{% static 'js/rooms.js' %}"></script>
 {% endblock %}

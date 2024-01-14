@@ -1,5 +1,6 @@
 {% extends 'index/base.html' %}
 {% load i18n %}
+{% load chat_api_tags %}
 
 {% block title %}{% translate "View Requests" %}{% endblock title %}
 
@@ -8,23 +9,65 @@
 {% endblock %}
 
 {% block content %}
-    <h1 class="page-header text-center">
-        {% translate "View request" %}
-        <div class="text-right">
-            <a href="{% url 'friend_requests:list' %}" class="btn btn-primary btn-lg">
-                <span class="glyphicon glyphicon-arrow-left"></span>
-            </a>
-        </div>
-    </h1>
-
-    <div class="row">
-        <div class="col-lg-12">
-            <div class="panel panel-{{ notif.level }}">
-                <div class="panel-heading">Friend request from {{ req.user_from }} {{ notif.status }}</div>
-                <div class="panel-body"><pre>{{ req.status }}</pre></div>
+<div class="MiddleColumn-notifications">
+    <div class="MiddleHeader">
+        <div class="Transition">
+            <div class="Transition_slide Transition_slide-active">
+                <div class="back-button">
+                    <a class="Button smaller translucent round" type="button" title="Back" href="{% url 'friend_requests:list' %}">
+                        <i class="icon fa-solid fa-arrow-left" aria-hidden="true"></i>
+                    </a>
+                </div>
+                <div class="chat-info-wrapper">
+                    <div class="ChatInfo">
+                        <div class="info">
+                            <div class="title ysHMmXALnn0fgFRc7Bn7">
+                                <h3 class="page-header text-center">
+                                    {% translate "View request" %}
+                                </h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
+    <div class="Transition" style="padding: 3rem;">            
+        <div class="card text-bg-dark border-light bg-color-dark">
+            <div class="cart-title">
+                <span>Friend request</span>
+            </div>
+            <div class="card-body">
+                <span style="margin-right: 0.5rem;">You got the new friend request from
+                     <a href="{% url 'profile' req.user_from.user_id %}" title="{{ req.user_from.username }}" style="text-decoration: underline;">
+                        {{ req.user_from.username }}
+                    </a>
+                </span>
+                {% if req.user_from.Avatar %}
+                    <div class="Avatar size-smaller">
+                        <div class="inner">
+                            <img class="Avatar__media" src="{{ req.user_from.Avatar }}" alt="{{ req.user_from.username }}">
+                {% else %}
+                    <div class="Avatar size-smaller peer-color-2 no-photo">
+                        <div class="inner">{% first_letter req.user_from.username %}
+                {% endif %}
+                    </div>
+                </div> 
+            </div>
+            <div class="card-footer border-light">
+                <span>{{ req.timestamp }}</span>
+                {% if req.status == "sent" %}
+                    <a href="{% url 'friend_requests:set_as_accepted' req.id %}" class="Button translucent success">{% translate "Accept" %}</a>
+                    <a href="{% url 'friend_requests:set_as_declined' req.id %}" class="Button translucent danger">{% translate "Decline" %}</a>
+                {% else %}
+                <div>
+                    <div class="Button translucent">{{ req.status }}</div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 

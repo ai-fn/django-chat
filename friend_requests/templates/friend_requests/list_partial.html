@@ -1,24 +1,36 @@
 {% load i18n %}
+{% load chat_api_tags %}
 
 {% if friend_requests %}
     <div class="table-responsive">
         {% for req in friend_requests %}
-            <div class="card text-bg-dark border-light bg-color-dark">
-                <div class="cart-title">
-                    <span>Status: {{req.status}}</span>
+            <a class="notification-container" href="{% url 'friend_requests:view' req.id %}">
+                <div class="card text-bg-dark border-light bg-color-dark">
+                    <div class="cart-title">
+                        <span>Status: {{ req.status }}</span>
+                    </div>
+                    <div class="card-body d-flex align-items-center">
+                        <span>Запрос от {{ req.user_from.First_Name }} {{ req.user_from.Second_Name }}</span>
+                        {% if req.user_from.Avatar %}
+                            <div class="Avatar size-smaller">
+                                <div class="inner">
+                                    <img class="Avatar__media" src="{{ req.user_from.Avatar }}" alt="{{ req.user_from.username }}">
+                        {% else %}
+                            <div class="Avatar size-smaller peer-color-2 no-photo">
+                                <div class="inner">{% first_letter req.user_from.username %}
+                        {% endif %}
+                            </div>
+                        </div>    
+                    </div>
+                    <div class="card-footer border-light">
+                        <span>{{ req.timestamp }}</span>
+                        {% if req.status == "sent" %}
+                            <a href="{% url 'friend_requests:set_as_accepted' req.id %}" class="Button translucent success">{% translate "Accept" %}</a>
+                            <a href="{% url 'friend_requests:set_as_declined' req.id %}" class="Button translucent danger">{% translate "Decline" %}</a>
+                        {% endif %}
+                    </div>
                 </div>
-                <div class="card-body d-flex align-items-center">
-                    <span>Запрос от {{ req.user_from.First_Name }} {{ req.user_from.Second_Name }}</span>
-                    <div class="avatar small" style="background-image: url({{ req.user_from.Avatar }});"></div>    
-                </div>
-                <div class="card-footer border-light">
-                    <span>{{ req.timestamp }}</span>
-                    {% if req.status == "sent" %}
-                        <a href="{% url 'friend_requests:set_as_accepted' req.id %}" class="btn btn-outline-success me-2">{% translate "Accept" %}</a>
-                        <a href="{% url 'friend_requests:set_as_declined' req.id %}" class="btn btn-outline-danger me-2">{% translate "Decline" %}</a>
-                    {% endif %}
-                </div>
-            </div>
+            </a>
         {% endfor %}
     </div>
 {% else %}

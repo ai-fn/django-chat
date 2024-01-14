@@ -17,11 +17,11 @@ logger = logging.getLogger(__name__)
 
 @login_required
 def notification_list(request):
-    logger.debug("notification_list called by user %s" % request.user)
+    logger.info("notification_list called by user %s" % request.user)
     notification_qs = Notification.objects.filter(user=request.user.pk).order_by('-timestamp')
     new_notifs = notification_qs.filter(viewed=False)
     old_nofifs = notification_qs.filter(viewed=True)
-    logger.debug(
+    logger.info(
         "User %s has %s unread and %s read notifications",
         request.user,
         len(new_notifs),
@@ -37,14 +37,14 @@ def notification_list(request):
 
 @login_required
 def notification_view(request, notif_id: int):
-    logger.debug(
+    logger.info(
         "notification_view called by user %s for notif_id %s",
         request.user,
         notif_id
     )
     notif = get_object_or_404(Notification, pk=notif_id)
     if notif.user == request.user:
-        logger.debug("Providing notification for user %s" % request.user)
+        logger.info("Providing notification for user %s" % request.user)
         context = {
             'user': UserSerialize(request.user).data,
             'notif': notif,
@@ -64,7 +64,7 @@ def notification_view(request, notif_id: int):
 
 @login_required
 def remove_notification(request, notif_id):
-    logger.debug(
+    logger.info(
         "remove notification called by user %s for notif_id %s",
         request.user, notif_id
     )
@@ -72,7 +72,7 @@ def remove_notification(request, notif_id):
     if notif.user == request.user:
         if Notification.objects.filter(id=notif_id).exists():
             notif.delete()
-            logger.debug("Deleting notif_id %s by user %s", notif_id, request.user)
+            logger.info("Deleting notif_id %s by user %s", notif_id, request.user)
             messages.success(request, _('Deleted notification.'))
     else:
         logger.error(
@@ -86,7 +86,7 @@ def remove_notification(request, notif_id):
 
 @login_required
 def mark_all_read(request):
-    logger.debug("mark all notifications read called by user %s", request.user)
+    logger.info("mark all notifications read called by user %s", request.user)
     Notification.objects.filter(user=request.user).update(viewed=True)
     messages.success(request, _('Marked all notifications as read'))
     return redirect("notifications:list")
@@ -94,7 +94,7 @@ def mark_all_read(request):
 
 @login_required
 def delete_all_read(request):
-    logger.debug("delete all notifications called by user %s", request.user)
+    logger.info("delete all notifications called by user %s", request.user)
     Notification.objects.filter(user=request.user).filter(viewed=True).delete()
     messages.success(request, _('Deleted all notifications'))
     return redirect("notifications:list")

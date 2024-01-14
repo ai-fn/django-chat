@@ -1,23 +1,25 @@
 {% load static %}
 {% load chat_api_tags %}
 
-
-<ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
-        <li class="nav-item" role="presentation">
-            <button class="nav-link active" id="pills-all-tab" data-bs-toggle="pill" data-bs-target="#pills-all" type="button" role="tab" aria-controls="pills-all" aria-selected="true">All</button>
-        </li>
-        {% for folder in folders %}
-            {% with name=folder.name %}
-                <li class="nav-item d-flex" role="presentation">
-                    <button class="nav-link" id="pills-{{ name|join:'' }}-tab" data-bs-toggle="pill" data-bs-target="#pills-{{ name|join:'' }}" type="button" role="tab" aria-controls="pills-{{ name|join:'' }}" aria-selected="true">
-                        {{ name }}
-                    </button>
-                </li>
-            {% endwith %}
-        {% endfor %}
-    <li class="nav-item" role="presentation">
-        <button class="nav-link" data-bs-toggle="modal" data-bs-target="#addFolderModal" type="button" role="tab">
-            <i class="fa-solid fa-circle-plus"></i>
-        </button>
-    </li>
-</ul>
+<div class="TabList no-scrollbar" id="pills-tab" role="tablist" style="flex-wrap: nowrap; max-width: 15rem; overflow-x: scroll; box-shadow: none;">
+    <button class="Tab Tab--interactive active" id="pills-all-tab" data-bs-toggle="pill" data-bs-target="#pills-all" type="button" role="tab" aria-controls="pills-all" aria-selected="true">
+        <span class="Tab_inner">
+            All
+            <i class="platform" style="transform: none;"></i>
+        </span>
+    </button>
+    {% for folder in folders %}
+        {% with name=folder.name %}
+            <button class="Tab Tab--interactive" id="pills-{{ name|join:'' }}-tab" data-bs-toggle="pill" data-bs-target="#pills-{{ name|join:'' }}" type="button" role="tab" aria-controls="pills-{{ name|join:'' }}" aria-selected="true">
+                <span class="Tab_inner">
+                    {{ name }}
+                    <i class="platform" style="transform: none;"></i>
+                </span>
+            </button>
+        {% endwith %}
+    {% endfor %}
+    <button class="Tab Tab--interactive" data-bs-toggle="modal" data-bs-target="#addFolderModal" type="button" role="tab">
+        <i class="fa-solid fa-circle-plus"></i>
+        <i class="platform" style="transform: none;"></i>
+    </button>
+</div>

@@ -35,52 +35,26 @@ fileInput.addEventListener('click', () => {
 
 function createFileInput({allowedExt}) {
     let inp = document.createElement("input");
-    let formData;
-	let files;
-	if (localStorage.getItem('formData') != null){
-		formData = JSON.parse(localStorage.formData);
-		files = JSON.parse(formData.files);
-	} else {
-		formData = new FormData();
-		formData.append("files", files);
-	}
     inp.type = "file";
 	inp.accept = allowedExt;
     inp.style.display = "none";
     document.body.appendChild(inp);
+	e.target.parentElement.previousElementSibling.click();
 
-    inp.addEventListener("change", (e) => {
+    inp.addEventListener("change", async (e) => {
 			if (document.getElementsByClassName("Modal")[0] == undefined){
-				createAttachModal();
+				createAttachModal(allowedExt, asFile);
 			}
 			const selectedFiles = e.target.files;
 			if (!selectedFiles) return;
 	
 			for (var i = 0; i < selectedFiles.length; i++) {
 				let file = selectedFiles[i];
-				const reader = new FileReader();
-				reader.onload = (e) => {
-					let prevFiles;
-					let newFile = JSON.stringify({
-						name: file.name,
-						base64String: String.fromCharCode.apply(null, new Uint8Array(reader.result))
-					})
-					displayImage(e.target.result);
-					if (files != undefined){
-						prevFiles = JSON.parse(files);
-						prevFiles.files.push(newFile)
-					} else {
-						prevFiles = JSON.stringify({
-							files: new Array(newFile),
-						});
-					}
-					formData.files = JSON.stringify(prevFiles);
-					localStorage.formData = JSON.stringify(formData)
-				};
-				reader.readAsDataURL(file);
+				let base64 = await readAsDataURL(file);
+				displayImage(base64, asFile, file);
 				document.body.removeChild(inp);
 			}
 	});
-	localStorage.caption = editableMessageText.innerText;
 	inp.click();
 }
+

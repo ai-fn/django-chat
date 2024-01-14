@@ -29,6 +29,7 @@ function startAudioRecording(ws) {
                         message = {
                             action: 'audio-message',
                             audioFile: base64String,
+                            fileType: 'audio'
                         }
                         ws.send(JSON.stringify(message));
                     }

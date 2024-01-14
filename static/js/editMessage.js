@@ -2,34 +2,48 @@ import { urlify } from "./utils.js";
 import { send } from "./websocket.js";
 import { undoManager } from "./undoManager.js";
 import { ws } from "./websocket.js";
-import { selectMessage, showNotify } from "./contextmenu.js";
+import { closeComposerEmbeded, selectMessage, showNotify } from "./contextmenu.js";
+import { createAttachModal, createDeletionModal, displayImage } from "./attachModal.js";
 
 export const sendMsgBtn = document.getElementById('inp-send-msg');
 export const editableMessageText = document.getElementById('editable-message-text');
 export const msgWrapper = editableMessageText;
 
-sendMsgBtn.onclick = function () {
-    switch (sendMsgBtn.classList.item(1)){
-        case "edit":
-            if (selectMessage != null){
-                if (selectMessage.body != editableMessageText.innerText){
-                    ws.send(JSON.stringify({
-                        action: "edit-message",
-                        messageId: selectMessage.id,
-                        messageBody: editableMessageText.innerText
-                    }))
-                }
-            } else {showNotify("Message not selected");}
-            break;
-        default:
-            send(); resetMsgArea(editableMessageText);
-            break;
-    }
-};
 
 editableMessageText.onpaste = onPaste;
 editableMessageText.onkeydown = onKeyDown;
 editableMessageText.oninput = onInput;
+sendMsgBtn.onclick = sendHandler;
+
+function sendHandler () {
+    switch (sendMsgBtn.classList.item(1)){
+        case "edit":
+            if (selectMessage != null){
+                if (selectMessage.body != editableMessageText.innerText.trim()){
+                    if (editableMessageText.innerText.trim().length > 0 || selectMessage.attachments.length > 0 || selectMessage.voice_file != null) {
+                        ws.send(JSON.stringify({
+                        action: "edit-message",
+                        messageId: selectMessage.id,
+                        messageBody: editableMessageText.innerText.trim()
+                        }))
+                    }
+                    else {
+                        createDeletionModal();
+                    }
+                }
+                setTimeout(
+                    () => {
+                        closeComposerEmbeded();
+                    }, 50
+                );
+            } else {showNotify("Message not selected");}
+            break;
+        default:
+            send();
+            resetMsgArea(editableMessageText);
+            break;
+    }
+};
 
 export function onPaste (event) {
     event.preventDefault();

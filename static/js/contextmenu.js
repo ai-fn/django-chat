@@ -1,15 +1,21 @@
+import { createDeletionModal } from "./attachModal.js";
 import { editableMessageText, sendMsgBtn, resetMsgArea } from "./editMessage.js";
-import { messagesArray, user, ws } from "./websocket.js";
+import { getPreviewMessage } from "./utils.js";
+import { messagesArray, scrollToBottom, user, ws } from "./websocket.js";
 
+let selectMessages = [];
 let closestContainer;
 let backdrop = document.createElement("div");
+let composer = document.querySelector(".messages-footer .Composer");
+let selectToolbar = document.querySelector(".messages-footer .MessageSelectToolbar");
 export let selectMessage;
-let selectMessages;
 
+const selectedIcon = `<i class="icon fa-solid fa-check"></i>`;
+const messageList = document.querySelector(".messages-container");
+const mainContainer = document.querySelector('.MessageList');
 const contextMenuContainer = document.createElement('div');
 const contextMenuItems = document.createElement("div");
 const presentation = document.createElement('div');
-const mainContainer = document.getElementsByClassName('main-container')[0];
 const offsetHeight = 316;
 const offsetWidth = 216;
 
@@ -73,181 +79,254 @@ function buildContext(){
     if (name == "Download" && !selectMessage.attachments.some(obj => obj.name) && selectMessage.voice_file == null && selectMessage.video_file == null)
       continue;
 
-    let act = document.createElement("div");
-    act.setAttribute("role", "menuitem");
-    act.setAttribute("tabindex", "0");
-    act.setAttribute("class", "MenuItem compact");
-    act.insertAdjacentHTML("beforeend", `<i class='icon ${actions[name].imgName}'></i>${name}`);
-    if (name.toLowerCase() == 'delete'){
-      act.classList.add("destructive");
+        let act = document.createElement("div");
+        let rotate = actions[name].hasOwnProperty("rotate") ? `${actions[name].rotate}deg` : "";
+        act.setAttribute("role", "menuitem");
+        act.setAttribute("tabindex", "0");
+        act.setAttribute("class", "MenuItem compact");
+        act.insertAdjacentHTML("beforeend", `<i class='icon ${actions[name].imgName}' style="rotate: ${rotate};"></i>${name}`);
+        if (name.toLowerCase() == 'delete') {
+            act.classList.add("destructive");
+        }
+        act.addEventListener("click", actions[name].action);
+        actContainers.push(act);
     }
-    act.addEventListener("click", actions[name].action);
-    actContainers.push(act);
-  }
 }
 
-mainContainer.appendChild(contextMenuContainer);
-messages.addEventListener("contextmenu", function (event) {
-  event.preventDefault();
 
-  let closest = event.target.closest(".message-container");
-  let targetMsg = closest ? closest : event.target.querySelector(".message-container");
-  // targetMsg = targetMsg ? targetMsg : event.target.parentElement.childNodes[1];
-  let msgId = targetMsg.getAttribute("data-message-id");
-  const msg = messagesArray.find((message) => message.id == msgId);
-  selectMessage = msg;
-	buildContext();
-  presentation.classList.replace('not-shown', 'shown');
 
-  backdrop = document.createElement("div");
-  backdrop.onclick = function(e) {closeContextMenu(e)};
-  backdrop.oncontextmenu = function(e) {closeContextMenu(e)};
-  backdrop.classList.add('backdrop')
-  
-  contextMenuItems.innerHTML = "";
-  contextMenuContainer.insertAdjacentElement("afterbegin", backdrop);
+function initContext(event) {
+    event.preventDefault();
 
-  for (let act of actContainers){
-    contextMenuItems.insertAdjacentElement("beforeend", act);
-  }
+    let closest = event.target.closest(".message-container");
+    let targetMsg = closest ? closest : event.target.querySelector(".message-container");
+    let msgId = targetMsg.getAttribute("data-message-id");
+    selectMessage = messagesArray.find((message) => message.id == msgId);
 
-  contextMenuContainer.style.left = event.clientX + "px";
-  contextMenuContainer.style.top = event.clientY + "px";
-  contextMenuContainer.style.display = "block";
-  
-  const containerRect = mainContainer.getBoundingClientRect();
-  const relativeY = event.clientY - containerRect.top;
-  const relativeX = event.clientX - containerRect.left;
+    buildContext();
 
-  let horizontal = offsetWidth + relativeX <= mainContainer.offsetWidth ? "left" : "right";
-  let vertiacal = offsetHeight + relativeY >=  mainContainer.offsetHeight ? "bottom" : "top";
+    presentation.classList.replace('not-shown', 'shown');
 
-  presentation.classList.contains("left") ? presentation.classList.replace('left', horizontal) : presentation.classList.replace('right', horizontal);
-  presentation.classList.contains("bottom") ? presentation.classList.replace('bottom', vertiacal) : presentation.classList.replace('top', vertiacal);
-  if (presentation.classList.contains("top") && offsetHeight + relativeY > mainContainer.offsetHeight)
-    contextMenuItems.style.maxHeight = `${mainContainer.offsetHeight - relativeY}px`;
-  if (presentation.classList.contains('bottom') && offsetHeight + relativeY > mainContainer.offsetTop)
-    contextMenuItems.style.maxHeight = `${relativeY}px`;
+    backdrop = document.createElement("div");
+    backdrop.onclick = closeContextMenu;
+    backdrop.oncontextmenu = closeContextMenu;
+    backdrop.classList.add('backdrop')
 
-  closestContainer = event.target.closest(".message-container") || event.target.querySelector(".message-container");
-  closestContainer.style.backgroundColor = "rgba(0, 0, 0, 0.3)";
-  
-  presentation.classList.replace('not-open', 'open');
-});
+    contextMenuItems.innerHTML = "";
+    contextMenuContainer.insertAdjacentElement("afterbegin", backdrop);
 
-function closeContextMenu(e){
-  e.preventDefault();
-  actContainers = [];
-  presentation.classList.replace('open', 'not-open');
-  closestContainer.style.backgroundColor = 'transparent';
-  contextMenuItems.style.removeProperty('max-height');
-  contextMenuContainer.querySelector('.backdrop').remove();
-  setTimeout(() => {
-    presentation.classList.replace('shown', 'not-shown');
-    contextMenuContainer.style.display = "none";
-  }, 200)
+    for (let act of actContainers) {
+        contextMenuItems.insertAdjacentElement("beforeend", act);
+    }
+
+    contextMenuContainer.style.left = event.clientX + "px";
+    contextMenuContainer.style.top = event.clientY + "px";
+    contextMenuContainer.style.display = "block";
+
+    const containerRect = mainContainer.getBoundingClientRect();
+    const relativeY = event.clientY - containerRect.top;
+    const relativeX = event.clientX - containerRect.left;
+
+    let horizontal = offsetWidth + relativeX <= mainContainer.offsetWidth ? "left" : "right";
+    let vertiacal = offsetHeight + relativeY >= mainContainer.offsetHeight ? "bottom" : "top";
+
+    presentation.classList.contains("left") ? presentation.classList.replace('left', horizontal) : presentation.classList.replace('right', horizontal);
+    presentation.classList.contains("bottom") ? presentation.classList.replace('bottom', vertiacal) : presentation.classList.replace('top', vertiacal);
+    if (presentation.classList.contains("top") && offsetHeight + relativeY > mainContainer.offsetHeight)
+        contextMenuItems.style.maxHeight = `${mainContainer.offsetHeight - relativeY}px`;
+    if (presentation.classList.contains('bottom') && offsetHeight + relativeY > mainContainer.offsetTop)
+        contextMenuItems.style.maxHeight = `${relativeY}px`;
+
+    closestContainer = event.target.closest(".message-container") || event.target.querySelector(".message-container");
+    closestContainer.style.backgroundColor = "rgba(0, 0, 0, 0.3)";
+
+    presentation.classList.replace('not-open', 'open');
+};
+
+function closeContextMenu(e) {
+    e.preventDefault();
+    actContainers = [];
+    presentation.classList.replace('open', 'not-open');
+    closestContainer.style.backgroundColor = 'transparent';
+    contextMenuItems.style.removeProperty('max-height');
+    let backdrop = contextMenuContainer.querySelector('.backdrop')
+    if (backdrop)
+        backdrop.remove();
+    setTimeout(() => {
+        presentation.classList.replace('shown', 'not-shown');
+        contextMenuContainer.style.display = "none";
+    }, 200)
 };
 
 function copy() {
-  navigator.clipboard.writeText(selectMessage.body);
-  showNotify("Copied to Clipboard");
-  backdrop.click();
+    navigator.clipboard.writeText(selectMessage.body);
+    showNotify("Copied to Clipboard");
+    backdrop.click();
 }
 
-function deletion(){
-	if (ws.OPEN){
-		ws.send(JSON.stringify({
-			msg_id: selectMessage.id,
-			action: 'msg-deletion'
-		}))
-	} else{
-		showNotify("Connection...")
-	}
-	backdrop.click();
+export function deletion(id) {
+    let msgId;
+    if (id == undefined)
+        msgId = selectMessage.id;
+    else
+        msgId = id;
+    if (ws.OPEN) {
+        ws.send(JSON.stringify({
+            msg_id: msgId,
+            action: 'msg-deletion'
+        }))
+        } else {
+            showNotify("Connection...")
+        }
+    backdrop.click();
 }
 
-export function showNotify(notifyText){
-  const notifyContainer = document.createElement("div");
-  const notify = document.createElement("div");
-  const content = document.createElement("div");
-  notify.appendChild(content);
-  notifyContainer.appendChild(notify);
-  document.body.appendChild(notifyContainer);
+export function showNotify(notifyText, delay = 3000) {
+    let notify = document.createElement("div");
+    let content = document.createElement("div");
+    let notifyContainer = document.createElement("div");
+    let innerContent = document.createElement("span");
 
-  notify.setAttribute("class", "Notification opacity-transition fast not-open shown");
-  content.setAttribute("class", "content");
-  notifyContainer.setAttribute('class', "Notification-container");
-  content.innerText = notifyText;
-  
-  notify.classList.replace('not-open', 'open');
+    notify.setAttribute("class", "Notification opacity-transition fast not-open shown");
+    content.setAttribute("class", "content");
+    notifyContainer.setAttribute('class', "Notification-container");
+    innerContent.innerText = notifyText;
+
+    content.appendChild(innerContent);
+    notify.appendChild(content);
+    notifyContainer.appendChild(notify);
+    document.body.appendChild(notifyContainer);
+
+    setTimeout(
+        () => {
+            notify.classList.replace('not-open', 'open');
+        }, 150
+    )
+    hideNotify();
 
   setTimeout(function() {
     notify.classList.replace("open", "not-open");
     notify.classList.replace("shown", "not-shown");
     notifyContainer.remove();
   }, 3000)
+    function hideNotify() {
+        setTimeout(function () {
+            notify.classList.replace("open", "not-open");
+            setTimeout(() => {
+                notify.classList.replace("shown", "not-shown");
+                notify.parentElement.remove()
+            }, 150)
+        }, delay)
+    }
+}
 }
 
-function downloadFiles(){
-  if (selectMessage.voice_file != null)
-    download(selectMessage.voice_file);
-  else if (selectMessage.video_file != null)
-    download(selectMessage.video_file);
-  else if (selectMessage.attachments.length > 0)
-    selectMessage.attachments.foreach(url => download(url));
-  backdrop.click();
+function downloadFiles() {
+    if (selectMessage.voice_file != null)
+        download(selectMessage.voice_file);
+    else if (selectMessage.video_file != null)
+        download(selectMessage.video_file);
+    else if (selectMessage.attachments.length > 0) {
+        for (let i = 0; i < selectMessage.attachments.length; i++) {
+            let el = selectMessage.attachments[i];
+            download(el.file);
+        }
+    }
+    backdrop.click();
 }
 
-function download(url){
-  let link = document.createElement('a');
-  link.setAttribute('href', url);
-  link.setAttribute('download', '');
-  link.style.display = 'none';
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
+export function download(url) {
+    let link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', '');
+    link.style.display = 'none';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
 }
-function edit(){
-  backdrop.click();
-  localStorage.draft = editableMessageText.innerHTML;
-  createEmbededComposer(selectMessage.body);
-  editableMessageText.innerText = selectMessage.body;
-  resetMsgArea(editableMessageText);
-  sendMsgBtn.classList.replace(sendMsgBtn.classList.item(1), 'edit');
+function edit() {
+    backdrop.click();
+    localStorage.draft = editableMessageText.innerHTML;
+    let currentComposer = document.querySelector(".ComposerEmbeddedMessage")
+    if (currentComposer)
+        closeComposerEmbeded();
+    createEmbededComposer();
+    editableMessageText.innerText = selectMessage.body;
+    resetMsgArea(editableMessageText);
+    sendMsgBtn.classList.replace(sendMsgBtn.classList.item(1), 'edit');
 }
-export function closeComposerEmbeded(){
-  let composer = document.getElementsByClassName("ComposerEmbeddedMessage")[0];
-  composer.classList.remove('open');
-  if (composer)
-    composer.remove();
-  if (editableMessageText.innerText.length > 0)
-    sendMsgBtn.classList.replace(sendMsgBtn.classList.item(1), 'send');
-  else
-    sendMsgBtn.classList.replace(sendMsgBtn.classList.item(1), 'recording');
-  let draft = localStorage.getItem("draft");
-  if (draft != null)
-    editableMessageText.innerHTML = draft;
-  resetMsgArea(editableMessageText);
-} 
-function createEmbededComposer(text){
-  let composerWrapper = document.getElementsByClassName("composer-wrapper")[0];
-  let composerHtml = `<div class="ComposerEmbeddedMessage opacity-transition fast shown">
-                    <div class="ComposerEmbeddedMessage_inner peer-color-3">
-                        <div class="embedded-left-icon">
-                            <i class="fa-solid fa-pen"></i>
-                        </div>
-                        <div class="EmbeddedMessage inside-input peer-color-3">
-                            <div class="message-text">
-                                <p class="embedded-text-wrapper"><span>${text != null ? text : ""}</span></p>
-                                <div class="message-title">Edit Message</div>
-                            </div>
-                        </div>
-                        <button type="button" class="Button embedded-cancel default translucent round faded" aria-label="Cancel" title="Cancel" style="">
-                            <i class="fa-solid fa-xmark"></i>
-                        </button>
-                    </div>
-                  </div>`;
-  composerWrapper.insertAdjacentHTML("afterbegin", composerHtml);
-  document.getElementsByClassName('embedded-cancel')[0].addEventListener("click", closeComposerEmbeded);
-  setTimeout(() => document.getElementsByClassName('ComposerEmbeddedMessage')[0].classList.add('open'), 50);
+export function closeComposerEmbeded() {
+    let composer = document.querySelector(".ComposerEmbeddedMessage");
+    composer.classList.remove('open');
+    setTimeout(() => {
+        if (composer)
+            composer.remove();
+    }, 150);
+    if (editableMessageText.innerText.length > 0)
+        sendMsgBtn.classList.replace(sendMsgBtn.classList.item(1), 'send');
+    else
+        sendMsgBtn.classList.replace(sendMsgBtn.classList.item(1), 'recording');
+    let draft = localStorage.getItem("draft");
+    if (draft != null)
+        editableMessageText.innerHTML = draft;
+    resetMsgArea(editableMessageText);
+    mainContainer.classList.remove("embedded");
+}
+
+export function scrollToSelectedMessage(selectMessageId) {
+    let currentMessage = document.querySelector(`#message${selectMessageId}`);
+
+    let clientHeight = mainContainer.clientHeight;
+    let targetOffsetTop = currentMessage.offsetTop;
+    let targetHeight = currentMessage.offsetHeight;
+
+    let scrollTo = targetOffsetTop + targetHeight - clientHeight;
+
+    mainContainer.scrollTo({ top: scrollTo + (mainContainer.clientHeight / 2 - currentMessage.offsetHeight), behavior: "smooth" });
+    highlightSelectedMessage(currentMessage);
+}
+
+function highlightSelectedMessage(message) {
+    message.style.backgroundColor = "rgba(0, 0, 0, 0.3)";
+    setTimeout(() => {
+        message.style.backgroundColor = "";
+    }, 1500);
+}
+
+function createEmbededComposer() {
+    let composerWrapper = document.getElementsByClassName("composer-wrapper")[0];
+    let composerHtml = `
+    <div class="ComposerEmbeddedMessage opacity-transition fast shown">
+      <div class="ComposerEmbeddedMessage_inner peer-color-3">
+        <div class="embedded-left-icon">
+            <i class="fa-solid fa-pen"></i>
+        </div>
+        <div class="EmbeddedMessage inside-input peer-color-3">
+            
+        </div>
+        <button type="button" class="Button embedded-cancel default translucent round faded" aria-label="Cancel" title="Cancel" style="">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+    </div>
+  `;
+
+    composerWrapper.insertAdjacentHTML("afterbegin", composerHtml);
+    document.querySelector(".EmbeddedMessage").addEventListener("click", () => scrollToSelectedMessage(selectMessage.id));
+    mainContainer.classList.add("embedded");
+
+    let textContentHtml;
+    let result = getPreviewMessage(selectMessage);
+    let embeddedMessage = composerWrapper.querySelector(".EmbeddedMessage");
+
+    if (result.isMedia) {
+        textContentHtml = `<div class="embedded-thumb">${result.preview}</div><div class="message-text"><p class="embedded-text-wrapper"><span>${result.text}</span></p><div class="message-title">Edit Message</div></div>`;
+        embeddedMessage.classList.add("with-thumb")
+    } else {
+        textContentHtml = `<div class="message-text"><p class="embedded-text-wrapper"><span>${result.fileTypeImg} ${result.text}</span></p><div class="message-title">Edit Message</div></div>`;
+    }
+
+    embeddedMessage.insertAdjacentHTML("beforeend", textContentHtml);
+    document.getElementsByClassName('embedded-cancel')[0].addEventListener("click", closeComposerEmbeded);
+    setTimeout(() => document.getElementsByClassName('ComposerEmbeddedMessage')[0].classList.add('open'), 50);
 }

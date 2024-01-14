@@ -76,7 +76,7 @@ class RoomSerialize(serializers.ModelSerializer):
             if obj.type == 'direct' and obj.name != 'Favorites':
                 res = settings.MEDIA_URL + str(obj.members.exclude(pk=req.user.pk)[0].Avatar)
                 return res
-        return settings.MEDIA_URL + str(obj.image)
+        return settings.MEDIA_URL + str(obj.image) if obj.image else None
 
     def get_name(self, obj: Room) -> str:
         req = self.context.get('request')

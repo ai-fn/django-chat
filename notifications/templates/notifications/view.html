@@ -8,16 +8,37 @@
 {% endblock %}
 
 {% block content %}
-    <h2 class="page-header text-center">
-        {% translate "View Notification" %}
-    </h2>
+<div class="MiddleColumn-notifications">
 
-    <div class="main-container">
+    <div class="MiddleHeader">
+        <div class="Transition">
+            <div class="Transition_slide Transition_slide-active">
+                <div class="back-button">
+                    <a class="Button smaller translucent round" type="button" title="Back" href="{% url 'notifications:list' %}">
+                        <i class="icon fa-solid fa-arrow-left" aria-hidden="true"></i>
+                    </a>
+                </div>
+                <div class="chat-info-wrapper">
+                    <div class="ChatInfo">
+                        <div class="info">
+                            <div class="title ysHMmXALnn0fgFRc7Bn7">
+                                <h3 class="page-header text-center">
+                                    {% translate "View Notification" %}
+                                </h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="Transition" style="padding: 1rem 3rem;">
         <div class="card text-bg-dark border-light bg-color-dark">
             {% if notif.title == "Friend Request" %}
                 <div class="cart-title">
-                    <span>Fr req</span>
-                    <span>{{notif.title}}</span>
+                    <span>Friend request</span>
+                    <span>{{ notif.title }}</span>
                 </div>
                 <div class="card-body">
                     <span>{{ notif.message }}</span>    
@@ -27,7 +48,7 @@
                 </div>
             {% else %}
                 <div class="cart-title">
-                    <span>{{notif.title}}</span>
+                    <span>{{ notif.title }}</span>
                 </div>
                 <div class="card-body">
                     <span>{{ notif.message }}</span>    
@@ -36,11 +57,12 @@
                     <span>{{ notif.timestamp }}</span>
                     <form action="{% url 'notifications:remove' notif.pk %}">
                         <input type="hidden" name="notif-id" id="notif-id" value="notif-id">
-                        <button type="submit" class="btn btn-danger" style="width: 15%;">Remove</button>
+                        <button type="submit" class="Button danger translucent">Remove</button>
                     </form>
                 </div>
             {% endif %}
         </div>
     </div>
+</div>
 {% endblock %}
 

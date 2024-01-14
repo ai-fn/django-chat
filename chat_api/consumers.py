@@ -37,8 +37,8 @@ class ChatConsumer(WebsocketConsumer):
             'edit-message': self.edit_message,
         }
 
-    def connect(self):
-        self.room_name = "room_name"
+    def connect(self) -> None:
+        self.room_name = self.scope['url_route']['kwargs']['room_pk']
         self.user_notif_room = 'user_%s' % self.scope['user']
         self.room_group_name = 'chat_%s' % self.room_name
         if self.room_group_name not in users_in_groups:
@@ -49,10 +49,9 @@ class ChatConsumer(WebsocketConsumer):
             self.room_group_name,
             self.channel_name
         )
-
         self.accept()
 
-    def disconnect(self, close_code):
+    def disconnect(self, close_code) -> None:
         async_to_sync(self.channel_layer.group_discard)(
             self.room_group_name,
             self.channel_name
@@ -67,7 +66,7 @@ class ChatConsumer(WebsocketConsumer):
             self.actions[action](text_data_json)
             return
         except KeyError:
-            logger.debug("Unknown action: '%s'" % action)
+            logger.info("Unknown action: '%s'" % action)
             if text_data_json.get("message") is not None:
                 self.send_message_to_all(self.create_message(text_data_json['message']))
 
@@ -76,7 +75,7 @@ class ChatConsumer(WebsocketConsumer):
         msg_body = text_data_json['messageBody']
         message = self.get_message(msg_id)
         if message is None:
-            logger.debug("Requested for edit message with pk %s not found" % msg_id)
+            logger.info("Requested for edit message with pk %s not found" % msg_id)
             self.send(json.dumps({
                 'action': 'notif',
                 'message': 'Message not fount'
@@ -243,31 +242,24 @@ class ChatConsumer(WebsocketConsumer):
                 notify(
                     user=user,
                     title="Message from chat %s" % self.room.name,
-                    message=f'You got a new message from chat {self.room.name}: "{message.data["body"]}"'
+                    message=f'You got a new message from chat {self.room.name}: "{message.body}"'
                 )
 
         async_to_sync(self.channel_layer.group_send)(
             self.room_group_name,
             {
                 'type': 'chat_message',
-                'message': message
+                'message': serialized_message,
+                'as_file': message.as_file
             }
         )
-
-    def chat_message(self, event) -> None:
-        message = event['message']
-
-        self.send(text_data=json.dumps({
-            'room': self.room_subscribe,
-            'message': message.data,
-            'action': 'receive',
-        }))
 
     def mark_msg_as_read(self, msgs: list) -> None:
         for item in msgs:
             msg = self.get_message(item['id'])
-            msg.users_read.add(self.scope['user'])
-        logger.debug("Mark messages as read")
+            if msg is not None:
+                msg.users_read.add(self.scope['user'])
+        logger.info("Mark messages as read")
 
     def create_message(self, message=None, voice_file=None, msg_type=Message.Type.TEXT, **kwargs) -> Message:
         message = Message.objects.create(
@@ -277,7 +269,7 @@ class ChatConsumer(WebsocketConsumer):
             voice_file=voice_file,
             msg_type=msg_type,
         )
-        logger.debug(f"Created new message by {self.scope['user']}")
+        logger.info(f"Created new message by {self.scope['user']}")
         for user in users_in_groups[self.room_group_name]:
             message.users_read.add(user)
         return message

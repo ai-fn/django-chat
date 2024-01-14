@@ -5,12 +5,21 @@
 <head>
     <meta charset="UTF-8">
     <title>{% block title %}Chat app{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/Transition.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/ListItem.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'css/Button.css' %}">
     {% block styles %}{% endblock %}
-    <link rel="stylesheet" type="text/css" href="{% static 'css/variables.css' %}">
-    <link rel="shortcut icon" type="image/x-icon" href="{% static 'favicon.ico' %}">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/MiddleHeader.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/MiddleColumn.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/Avatar.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'css/index.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/variables.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/_common.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/icons.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/FullNameTitle.css' %}">
+    <link rel="shortcut icon" type="image/x-icon" href="{% static 'favicon.ico' %}">
+
     <script src="https://kit.fontawesome.com/27372ff794.js" crossorigin="anonymous"></script>
 </head>
 
@@ -18,19 +27,25 @@
     <div id="portals"></div>
 
     {% block modal %}{% endblock %}
-    {% block header %}{% endblock %}
 
     
-    <div class="container alerts">
+    <div class="alerts">
         {% block messages %}
             {% include 'index/alerts.html' with messages=messages %}
         {% endblock %}
         {% block errors%}{% endblock %}
     </div>
 
-    <div class="container cont">
-        
-        {% block content %}{% endblock %}
+    
+
+    <div class="Transition">
+        {% block header %}{% endblock %}        
+        <div id="Main" class="Transition_slide Transition_slide-active">
+            <div id="MiddleColumn" class="Transition mask-image-disabled">
+                <div class="ON5E8MkEVA1mAlkuIxhG OWFg9Wf1uioPWDz_IgS8"></div>
+                {% block content %}{% endblock %}
+            </div>
+        </div>
     </div>
 
     {% block footer %}{% endblock %}

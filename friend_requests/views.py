@@ -18,12 +18,12 @@ logger = logging.getLogger(__name__)
 
 @login_required
 def request_list(request):
-    logger.debug("Requests list was called by %s" % request.user)
+    logger.info("Requests list was called by %s" % request.user)
     requests_list_qs = FriendRequest.objects.filter(user_to=request.user).order_by("-timestamp")
     accepted = RequestSerializer(requests_list_qs.filter(status=FriendRequest.Status.ACCEPTED), many=1).data
     declined = RequestSerializer(requests_list_qs.filter(status=FriendRequest.Status.DECLINED), many=1).data
     sent = RequestSerializer(requests_list_qs.filter(status=FriendRequest.Status.SENT), many=1).data
-    logger.debug(
+    logger.info(
         "User %s has %s accepted, %s declined and %s sent friend requests",
         request.user, len(accepted), len(declined), len(sent)
     )
@@ -39,7 +39,7 @@ def request_list(request):
 
 @login_required
 def request_set_as_accepted(request, request_pk):
-    logger.debug("Request %s set as accessed by user %s", request_pk, request.user)
+    logger.info("Request %s set as accessed by user %s", request_pk, request.user)
     friend_request = get_object_or_404(FriendRequest, pk=request_pk)
     friend_request.set_status('accepted')
     messages.success(request, _('Request accepted'))
@@ -49,7 +49,7 @@ def request_set_as_accepted(request, request_pk):
 
 @login_required
 def request_set_as_declined(request, request_pk):
-    logger.debug("Request %s set as declined by user %s", request_pk, request.user)
+    logger.info("Request %s set as declined by user %s", request_pk, request.user)
     friend_request = get_object_or_404(FriendRequest, pk=request_pk)
     friend_request.set_status('declined')
     messages.success(request, _('Request declined'))
@@ -80,12 +80,12 @@ def user_requests_count(request, user_pk):
 
 @login_required
 def remove_request(request, request_pk):
-    logger.debug("Remove friend_request %s was called by user %s", request_pk, request.user)
+    logger.info("Remove friend_request %s was called by user %s", request_pk, request.user)
     friend_req = get_object_or_404(FriendRequest, pk=request_pk)
     if friend_req.user_from == request.user:
         if FriendRequest.objects.filter(pk=request_pk).exists():
             friend_req.delete()
-            logger.debug('Friend request %s was deleted by user %s', request_pk, request.user)
+            logger.info('Friend request %s was deleted by user %s', request_pk, request.user)
             messages.success(request, _('Friend request deleted'))
     else:
         logger.error("Unable to delete friend request %s for user %s - matching is not found",
