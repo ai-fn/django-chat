@@ -204,11 +204,6 @@ export function showNotify(notifyText, delay = 3000) {
     )
     hideNotify();
 
-  setTimeout(function() {
-    notify.classList.replace("open", "not-open");
-    notify.classList.replace("shown", "not-shown");
-    notifyContainer.remove();
-  }, 3000)
     function hideNotify() {
         setTimeout(function () {
             notify.classList.replace("open", "not-open");
@@ -330,6 +325,31 @@ function createEmbededComposer() {
     document.getElementsByClassName('embedded-cancel')[0].addEventListener("click", closeComposerEmbeded);
     setTimeout(() => document.getElementsByClassName('ComposerEmbeddedMessage')[0].classList.add('open'), 50);
 }
+
+function copyImageToClipboard() {
+    backdrop.click();
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+    const image = new Image();
+    image.src = selectMessage.attachments.find(el => el.file_type == "image").file;
+
+    canvas.width = image.width;
+    canvas.height = image.height;
+    context.drawImage(image, 0, 0);
+
+    canvas.toBlob((pngBlob) => {
+        const clipboardItem = new ClipboardItem({ 'image/png': pngBlob });
+
+        navigator.clipboard.write([clipboardItem])
+            .then(() => {
+                showNotify('Image copied to clipboard successfully!');
+            })
+            .catch((error) => {
+                showNotify('Failed to copy image to clipboard: ' + error);
+            });
+    }, 'image/png');
+}
+
 function startMessagesSelection() {
     backdrop.click();
     mainContainer.classList.add("select-mode-active");
