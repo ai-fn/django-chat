@@ -274,12 +274,66 @@ class ChatConsumer(WebsocketConsumer):
 
     def attach_message(self, text_data_json) -> None:
         message = self.create_message()
-        files = map(lambda x: base64.b64decode(x), text_data_json['attachments'])
-        attachments = map(lambda x: Attachments.objects.create(file=x, message=message), list(files))
-        message.attachments.set(*attachments)
+        body = text_data_json['description']
+        as_file = text_data_json['asFiles']
+        as_compress = text_data_json['asCompressed']
+        message.body = body
+        message.as_file = as_file
+        for file in text_data_json['attachments']:
+            attach = Attachments(message=message)
+            base64_string = base64.b64decode(file['base64'].split(",")[1])
+            attach.file_size = file['fileSize']
+            attach.file_type = file['fileType']
+            file_id = file['id']
+            attach.name = file['name']
+            name, ext = os.path.splitext(file['name'])
+            temp_file_name = os.path.join(settings.MEDIA_ROOT, f"{name}_{file_id}{ext}")
+            with open(temp_file_name, "wb") as attach_file:
+                attach_file.write(base64_string)
+                file_name = attach_file.name
+            with open(temp_file_name, "rb") as attach_file:
+                attach_name = os.path.basename(attach_file.name)
+                attach.file.save(attach_name, File(attach_file), save=True)
+            if as_compress:
+                compress(file_name, attach)
+            else:
+                dest = os.path.join(
+                    settings.MEDIA_ROOT, 'room',
+                    str(attach.message.room.id), "attachments", f"FILE_{file_id}.{file['ext']}"
+                )
+                basename = os.path.basename(dest)
+                os.makedirs(dest.rstrip(basename), exist_ok=True)
+                os.rename(file_name, dest)
+            attach.save()
+            message.attachments.add(attach)
+        message.save()
+        self.send_message_to_all(message)
 
-    def send_message_to_all(self, message: Message) -> None:
-        message = MessageSerialize(message)
+    def audio_message(self, text_data_json) -> None:
+        message = self.create_message(msg_type=Message.Type.VOICE)
+        base64_file = text_data_json['audioFile']
+        file_type = text_data_json['fileType']
+
+        ext = file_extensions.get(file_type)
+
+        if ext is None:
+            err = "Got an unexpected file type %s" % file_type
+            logger.warning(err)
+            self.send(json.dumps({
+                "action": "notif",
+                "message": err
+            }))
+            return
+
+        bytes_file = base64.b64decode(base64_file)
+        with open(os.path.join(settings.MEDIA_ROOT, f"{file_type}-message.{ext}"), "wb") as file:
+            file.write(bytes_file)
+            file_name = file.name
+        compress_audio(input_file=file_name, instance=message)
+        self.send_message_to_all(message)
+
+    def send_message_to_all(self, message: Message, as_file=False) -> None:
+        serialized_message = MessageSerialize(message).data
 
         for user in self.room.members.exclude(user_id=self.scope['user'].pk):
             if user not in users_in_groups[self.room_group_name]:
