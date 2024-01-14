@@ -5,6 +5,7 @@ app_name = 'friend_requests'
 
 urlpatterns = [
     path('friend-requests/', views.request_list, name='list'),
+    path('friend-requests/<int:req_id>/', views.friend_request_view, name='view'),
     path('friend-requests/set_as_accepted/<int:request_pk>/', views.request_set_as_accepted, name='set_as_accepted'),
     path('friend-requests/set_as_declined/<int:request_pk>/', views.request_set_as_accepted, name='set_as_declined'),
     path('friend-requests/send-request/<int:to_user_pk>/', views.send_request, name='send'),
