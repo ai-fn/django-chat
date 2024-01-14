@@ -17,13 +17,41 @@ const maxMsgLength = 1600;
 const addMembersBtn = document.getElementById("addMembersBtn");
 export const messagesArray = [];
 
-ws.onopen = () => {
-    console.log("connect");
-    ws.send(JSON.stringify({
-        pk: localStorage.pk,
-        roomName: localStorage.roomName,
-        action: 'connect',
-    }))
+autoReconnect(() => {
+	ws = new WebSocket(url)
+	return ws;
+});
+
+function autoReconnect(ws_create) {
+	let rc = ws_create();
+	function startReconnecting() {
+		interval = setInterval(() => {
+			showNotify("Connecting...", 2000)
+			rc = ws_create();
+			rc.onopen = () => {
+				wsOnopen();
+				rc.onmessage = wsOnmessage;
+				rc.onclose = startReconnecting;
+				clearInterval(interval);
+				showNotify("Connection established")
+			}
+		}, 3000);
+	}
+	rc.onopen = () => {
+		wsOnopen();
+		rc.onmessage = wsOnmessage;
+		rc.onclose = startReconnecting;
+		clearInterval(interval);
+	}
+}
+
+function wsOnopen() {
+	console.log("connect");
+	ws.send(JSON.stringify({
+		pk: localStorage.pk,
+		roomName: localStorage.roomName,
+		action: 'connect',
+	}))
 };
 
 function wsOnmessage(e) {
