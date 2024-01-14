@@ -1,5 +1,27 @@
-try{
-    document.getElementById('imgInput').addEventListener('change', function(event) {
+import { setClassesToInputParentDiv } from "./utils.js";
+
+const img = document.createElement("img");
+const roomImgInput = document.getElementById('imgInput');
+const roomNameInp = document.querySelector("#id_room_name");
+const roomImgPrevContainer = document.querySelector(".modal-body .Avatar .inner")
+
+const ulFolders = document.querySelector(".TabList");
+const folders = ulFolders.querySelectorAll(".Tab");
+const newChatButton = document.querySelector(".NewChatButton");
+const roomsTransition = document.querySelector("#MiddleColumn");
+
+setClassesToInputParentDiv();
+
+img.classList.add("Avatar__media");
+document.querySelector(".Transition").classList.add("flex-col");
+
+roomsTransition.onmouseenter = () => {
+  newChatButton.classList.add("revealed");
+}
+roomsTransition.onmouseleave = () => {
+  newChatButton.classList.remove("revealed");
+}
+
 roomNameInp.addEventListener("input", () => {
   if (!img.src){
     roomImgPrevContainer.innerHTML = roomNameInp.value ? roomNameInp.value[0].toUpperCase() : "-";
