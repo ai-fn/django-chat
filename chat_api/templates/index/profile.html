@@ -136,34 +136,33 @@
 									<input type="file" accept="image/png, image/jpeg">
 									<i class="icon fa-solid fa-camera" style="font-size: 2rem;"></i>
 									{% if user.Avatar %}									
-										<img src="{{ user.Avatar }}" draggable="false" alt="Avatar"></label>
-									{% else %}
-										{% first_letter user.username %}
+										<img src="{{ user.Avatar }}" draggable="false" alt="Avatar">
 									{% endif %}
-								</div>
-								<div class="input-group touched with-label">
-									<input class="form-control" id="First_Name" type="text" dir="auto" aria-label="First name (required)" required value="{{ user.First_Name }}"><label>First name (required)</label>
-								</div>
-								<div class="input-group with-label">
-									<input class="form-control" id="Second_Name" type="text" dir="auto" aria-label="Last name (optional)" value="{{ user.Second_Name }}"><label>Last name (optional)</label>
-								</div>
+								</label>
 							</div>
-							<div class="settings-item">
-								<h4 class="settings-item-header">Username</h4>
-								<div class="input-group touched with-label">
-									<input class="form-control" id="username" type="text" dir="auto" aria-label="Username" value="{{ user.username }}">
-									<label>Username</label>
-								</div>
+							<div class="input-group touched with-label">
+								<input class="form-control" id="First_Name" type="text" dir="auto" aria-label="First name (required)" required value="{{ user.First_Name }}"><label>First name (required)</label>
+							</div>
+							<div class="input-group with-label">
+								<input class="form-control" id="Second_Name" type="text" dir="auto" aria-label="Last name (optional)" value="{{ user.Second_Name }}"><label>Last name (optional)</label>
 							</div>
 						</div>
-						<button type="button" class="Button FloatingActionButton default primary round" aria-label="Save" title="Save" tabindex="-1">
-							<i class="icon fa-solid fa-check"></i>
-							<form action="{% url 'profile' user.user_id %}" style="display: none;" method="post">
-								{% csrf_token %}
-							</form>
-						</button>
+						<div class="settings-item">
+							<h4 class="settings-item-header">Username</h4>
+							<div class="input-group touched with-label">
+								<input class="form-control" id="username" type="text" dir="auto" aria-label="Username" value="{{ user.username }}">
+								<label>Username</label>
+							</div>
+						</div>
 					</div>
+					<button type="button" class="Button FloatingActionButton default primary round" aria-label="Save" title="Save" tabindex="-1">
+						<i class="icon fa-solid fa-check"></i>
+						<form action="{% url 'profile' user.user_id %}" style="display: none;" method="post">
+							{% csrf_token %}
+						</form>
+					</button>
 				</div>
+			</div>
 		</div>
 	</div>
 </div>

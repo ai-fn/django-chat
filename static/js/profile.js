@@ -8,6 +8,9 @@ const inputs = document.querySelectorAll(".input-group>input");
 const updateInfoForm = document.querySelector("#Settings .settings-fab-wrapper .FloatingActionButton form");
 const updateInfoButton = updateInfoForm.parentElement;
 const avatarInput = document.querySelector(".AvatarEditable input");
+const img = document.createElement("img");
+img.setAttribute("draggable", "false");
+img.setAttribute("alt", "Avatar");
 
 inputs.forEach((el) => {
   el.addEventListener("focus", inputIsTouched);
@@ -70,7 +73,10 @@ try {
     const reader = new FileReader();
 
     reader.onload = function (e) {
-      document.querySelector('.AvatarEditable img').src = `${e.target.result}`;
+      let settedImg = document.querySelector('.AvatarEditable img');
+      if (!settedImg) {document.querySelector('.AvatarEditable label').insertAdjacentElement("afterbegin", img); settedImg = img};
+
+      settedImg.src = `${e.target.result}`;
     }
 
     reader.readAsDataURL(file);
