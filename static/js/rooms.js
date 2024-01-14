@@ -1,9 +1,10 @@
-import { setClassesToInputParentDiv } from "./utils.js";
+import { setClassesToInputParentDiv, inputIsTouched } from "./utils.js";
 
 const img = document.createElement("img");
 const roomImgInput = document.getElementById('imgInput');
 const roomNameInp = document.querySelector("#id_room_name");
 const roomImgPrevContainer = document.querySelector(".modal-body .Avatar .inner")
+const inputs = document.querySelectorAll("div input.form-control");
 
 const ulFolders = document.querySelector(".TabList");
 const folders = ulFolders.querySelectorAll(".Tab");
@@ -21,6 +22,10 @@ roomsTransition.onmouseenter = () => {
 roomsTransition.onmouseleave = () => {
   newChatButton.classList.remove("revealed");
 }
+
+inputs.forEach(el => el.addEventListener("focus", inputIsTouched));
+inputs.forEach(el => el.addEventListener("focusout", inputIsTouched));
+inputs.forEach(el => el.addEventListener("paste", inputIsTouched));
 
 roomNameInp.addEventListener("input", () => {
   if (!img.src){
