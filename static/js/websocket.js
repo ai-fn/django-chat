@@ -368,57 +368,166 @@ function getChatNotify(msg, extraClass=""){
         </div>`
     )
 }
-function getMesg(msg, unread=false, sent=false) {
-    let sntClass = sent ? "own" : ""; 
-    let sntMsgBody = sent ? "snt-message-body" : "";
-    let readStatClass = unread ? "unread-message" : "";
-    
-    let metaHtml = `<span class="MessageMeta">
-                        <span class="message-time" title="Sent at ${msg.sent_at}\n${msg.edited ? "Edited at " + msg.edited_at : ""}">${msg.edited ? "edited" : ""} ${msg.time}</span>
-                    </span>`;
+function getMesg(msg, unread = false, sent = false, asFile = false) {
+	if (msg.body != null && msg.body.length > 0)
+		msg.body = urlify(msg.body)
+	let sntClass = sent ? "own" : "";
+	let sntMsgBody = sent ? "snt-message-body" : "";
+	let readStatClass = unread ? "unread-message" : "";
+	let bodyHtml = `<div class="text-content">${msg.body}</div>`;
+	let metaHtml = `<span class="MessageMeta">
+					<span class="message-time" title="Sent at ${msg.sent_at}\n${msg.edited ? "Edited at " + msg.edited_at : ""}">${msg.edited ? "edited" : ""} ${msg.time}</span>
+				</span>`;
 
-    msg.body = urlify(msg.body)
-    let textBodyHtml = `<div class="text-content">${msg.body}${metaHtml}</div>`;
+	let msgHtml = `
+	<div class="Message allow-selection message-container ${readStatClass} ${sntClass}" id="message${msg.id}" data-message-id="${msg.id}">
+		<div class="message-select-control"></div>
+		<div class="message-content-wrapper ${sntMsgBody} can-select-text">
+			<div class="message-content has-shadow has-solid-background ${msg.attachments.length > 0 && !asFile ? "media" : msg.msg_type} ${msg.body != null && msg.body.length > 0 ? "text" : "no-text"} ${msg.voice_file != null ? "voice" : ""}" dir="auto">
+				<div class="content-inner" dir="auto">`
+	asFile = msg.as_file
+	let isVideo = false;
+	if (msg.attachments.length > 0) {
+		if (!asFile) {
+			if (msg.attachments.length == 1) {
+				for (let i = 0; i < msg.attachments.length; i++) {
+					let el = msg.attachments[i];
+					isVideo = el.file_type == "video";
+					let itemHtml = `<div id="album-media-message${msg.id}" class="media-inner interactive" style="height: 340px;">
+									${isVideo ? `<video class="full-media" loop playsinline controls><source src="${el.file}"></video>` : `<a href="${el.file}" data-lightbox="room-${room.id}"><img src="${el.file}" alt class="full-media"></a>`}
+								</div>`;
+					msgHtml += itemHtml;
+					msg.body != null && msg.body.length > 0 ? msgHtml += bodyHtml : null;
+				}
+			}
+			else if (msg.attachments.length > 1) {
+				let album;
+				let left = 0;
+				let top = 0;
+				let albumHeight = 551;
+				let rows = 0;
+				let padding = 1;
+				if (msg.attachments.length % 2 == 0) {
+					if (msg.attachments.length == 2) {
+						album = `<div class="Album" style="width: 480px; height: ${albumHeight}px">`;
+						for (let i = 0; i < msg.attachments.length; i++) {
+							let el = msg.attachments[i];
+							isVideo = el.file_type == "video";
+							let albumItemHtml = createAlbumItem(el, msg, (albumHeight / 2) * i, left, 470 - padding, albumHeight / 2 - padding, isVideo);
+							album += albumItemHtml;
+						}
+					} else {
+						rows = Math.floor(msg.attachments.length / 2);
+						albumHeight = rows * 121;
+						album = `<div class="Album" style="width: 480px; height: ${albumHeight}px">`;
+						for (let i = 0; i < msg.attachments.length; i++) {
+							let el = msg.attachments[i];
+							isVideo = el.file_type == "video";
+							let row = Math.floor(i / 2);
+							left = i % 2 == 0 ? 240 + padding : 0;
+							top = row * 121;
+							let albumItemHtml = createAlbumItem(el, msg, top, left, 240 - padding, 121 - padding, isVideo);
+							album += albumItemHtml;
+						};
+					}
+				}
+				else {
+					rows = (msg.attachments.length - 1) / 2;
+					albumHeight = 240 + rows * 121;
+					album = `<div class="Album" style="width: 480px; height: ${albumHeight}px">`;
+					album += createAlbumItem(msg.attachments[0], msg, top, left, 480, 240 - padding);
+					for (let i = 1; i < msg.attachments.length; i++) {
+						let el = msg.attachments[i];
+						isVideo = el.file_type == "video";
+						let row = Math.ceil(i / 2) + 1;
+						top = row != 1 ? 121 * row : 240;
+						left = i % 2 == 0 ? 240 + padding : 0;
+						let albumItemHtml = createAlbumItem(el, msg, top, left, 240 - padding, 121 - padding, isVideo);
+						album += albumItemHtml;
+					};
+				}
+				album += `</div>${msg.body != null && msg.body.length > 0 ? bodyHtml : ""}`;
+				msgHtml += album;
+			}
+		} else {
+			let defaultImgFile = (ext) => `<div class="file-icon default"><span class="file-ext" dir="auto">${ext}</span></div>`;
+			let innerHtml = (file, ext) => `
+				<div class="File interactive">
+					<div class="file-icon-container">
+						${["png", 'jpg', 'jpeg'].includes(ext) ? `<div class="file-preview media-inner"><a href="${file.file}" data-lightbox="room-${room.id}"><img src="${file.file}" class="full-media" width="48" height="48" draggable="false" alt=""></a></div>` : defaultImgFile(ext)}
+						${asFile ?
+					`<a href="${file.file}" download><i class="action-icon icon fa-solid fa-download"></i></a>`
+					:
+					`<a href="${file.file}" data-lightbox="room-${room.id}"><i class="action-icon icon fa-solid fa-eye"></i></a>`
+				}
+					</div>
+					<div class="file-info">
+						<div class="file-title" dir="auto" title="${file.name}">${file.name}</div>
+						<div class="file-subtitle" dir="auto"><span>${formatSizeUnits(file.file_size)}</span></div>
+					</div>
+				</div>`;
+			for (let i = 0; i < msg.attachments.length; i++) {
+				let file = msg.attachments[i];
+				let splitFileName = file.name.split('.')
+				let ext = splitFileName.pop()
+				msgHtml += innerHtml(file, ext)
+			}
+			msgHtml += msg.body != null && msg.body.length > 0 ? bodyHtml : "";
+		}
+	} else {
+		switch (msg.msg_type) {
+			case "text":
+				msgHtml += bodyHtml;
+				break;
+			case "voice":
+				msgHtml += `<div class="Audio inline ${sntClass}">
+							<button class="Button smaller primary round" id='playBtn-${msg.id}' type="button">
+								<i id='playSvg-${msg.id}' class="icon small-icon opacity-transition shown fa-solid fa-play"></i>
+								<i id='pauseSvg-${msg.id}' class="icon small-icon fa-solid opacity-transition not-shown fa-pause"></i>
+							</button>
+							<div id='canvas-${msg.id}' style="width: 10rem;"></div>
+						</div>
+						${msg.body != null && msg.body.length > 0 ? bodyHtml : ""}`;
+				break;
+			case "video":
+				break;
+		}
+	}
 
-    let msgHtml = `
-        <div class="Message allow-selection message-container ${readStatClass} ${sntClass}" id="message${msg.id}" data-message-id="${msg.id}">
-            <div class="message-content-wrapper ${sntMsgBody} can-select-text">
-                <div class="message-content has-shadow has-solid-background ${msg.msg_type} ${msg.body != null ? "text" : "no-text"}" ${msg.voice_file != null ? "voice" : ""} has-shadow has-solid-background"  dir="auto">
-                    <div class="content-inner" dir="auto">`
+	msgHtml += `</div>
+			</div>
+		</div>
+	</div>`
 
-    switch (msg.msg_type){
-        case "text":
-            msgHtml += textBodyHtml;
-            break;
-        case "voice":
-            msgHtml += `<div class="Audio inline ${sntClass}">
-                            <button class="Button smaller primary round" id='playBtn-${msg.id}' type="button">
-                                <i id='playSvg-${msg.id}' class="icon small-icon opacity-transition shown fa-solid fa-play"></i>
-                                <i id='pauseSvg-${msg.id}' class="icon small-icon fa-solid opacity-transition not-shown fa-pause"></i>
-                            </button>
-                            <div id='canvas-${msg.id}' style="width: 10rem;"></div>
-                        </div>
-                        ${msg.body != null ? textBodyHtml : ""}`;
-            break;
-    }
+	messages.insertAdjacentHTML("beforeend", msgHtml);
+	let message = messages.querySelector(`#message${msg.id} .message-content`);
+	let contentInner = message.querySelector('.content-inner');
+	let textContent = contentInner.querySelector('.text-content');
 
-    msgHtml += `</div>
-                ${msg.body == null ? metaHtml : ""}
-                </div>
-            </div>
-        </div>`
+	asFile ? message.classList.add("document") : null;
+	textContent != null ? textContent.insertAdjacentHTML("beforeend", metaHtml) : contentInner.insertAdjacentHTML("beforeend", metaHtml);
 
-    messages.insertAdjacentHTML("beforeend", msgHtml);
-    if (msg.voice_file != null) {
-        drawAudio(msg.voice_file, msg.id);
-    }
+	if (!asFile && (msg.body == null || msg.body.length == 0) && msg.attachments.length > 0) {
+		message.classList.remove("has-solid-background");
+	}
+	if (msg.voice_file != null) {
+		drawAudio(msg.voice_file, msg.id);
+	}
 }
 
-export function send() {
-    if (ws.readyState === ws.CONNECTING) {
-        console.log('WebSocket still connecting');
-        return
-    }
+function createAlbumItem(el, msg, top, left, width, height, isVideo = false) {
+	return `<div class="album-item-select-wrapper" style="left: ${left}px; top: ${top}px">
+			<div id="album-media-message${msg.id}" class="media-inner interactive" style="width: ${width}px; height: ${height}px;">
+				${isVideo ? `<video class="full-media" loop playsinline controls><source src="${el.file}"></video>` : `<a href="${el.file}" data-lightbox="room-${room.id}"><img src="${el.file}" alt class="full-media"></a>`}
+			</div>
+		</div>`;
+}
+
+function send() {
+	if (ws.readyState === ws.CONNECTING) {
+		console.log('WebSocket still connecting');
+		return
+	}
 
     const msg = editableMessageText.innerText.trim();
 
