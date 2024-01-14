@@ -8,7 +8,15 @@ const btn = document.querySelector('#resendConfirmMessageBtn');
 
 if (confEmailAlert && btn)
     btn.style.display = "block";
-} else { btn.style.display = "none"; }
+else
+    btn? btn.style.display = "none" : null;
+
+setClassesToInputParentDiv();
+resendButton ? resendButton.addEventListener('click', handleResendClick) : null;
+window.addEventListener('load', onLoad);
+inputs.forEach(el => el.addEventListener("focus", inputIsTouched));
+inputs.forEach(el => el.addEventListener("focusout", inputIsTouched));
+inputs.forEach(el => el.addEventListener("paste", inputIsTouched));
 
 function handleResendClick() {
     resendButton.disabled = true;
