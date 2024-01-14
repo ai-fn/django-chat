@@ -38,6 +38,32 @@ def request_list(request):
 
 
 @login_required
+def friend_request_view(request, req_id: int):
+    logger.info(
+        "friend_request:view called by user %s for req_id %s",
+        request.user,
+        req_id
+    )
+    req = get_object_or_404(FriendRequest, pk=req_id)
+    if req.user_to == request.user:
+        logger.info("Providing friend request for user %s" % request.user)
+        context = {
+            'user': UserSerialize(request.user).data,
+            'req': RequestSerializer(req).data,
+        }
+        return render(request, 'friend_requests/view.html', context=context)
+    else:
+        logger.warning(
+            "User %s not authorized to view notification with id %s belonging to user %s",
+            request.user,
+            req_id,
+            req.user_to
+        )
+        messages.error(request, _('You are not authorized to view that friend_request.'))
+        return redirect('friend_requests:list')
+
+
+@login_required
 def request_set_as_accepted(request, request_pk):
     logger.info("Request %s set as accessed by user %s", request_pk, request.user)
     friend_request = get_object_or_404(FriendRequest, pk=request_pk)
@@ -60,7 +86,7 @@ def request_set_as_declined(request, request_pk):
 def send_request(request, to_user_pk):
     from .core import sent_req
 
-    logger.debug("User %s sent friend request to user with pk %s", request.user, to_user_pk)
+    logger.info("User %s sent friend request to user with pk %s", request.user, to_user_pk)
 
     try:
         sent_req(user_from=request.user.pk, user_to=to_user_pk)
