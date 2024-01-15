@@ -2,6 +2,7 @@ import base64
 import datetime
 import json
 import logging
+import os
 
 from asgiref.sync import async_to_sync
 from channels.generic.websocket import WebsocketConsumer
@@ -294,16 +295,13 @@ class ChatConsumer(WebsocketConsumer):
             with open(temp_file_name, "rb") as attach_file:
                 attach_name = os.path.basename(attach_file.name)
                 attach.file.save(attach_name, File(attach_file), save=True)
+
             if as_compress:
                 compress(file_name, attach)
-            else:
-                dest = os.path.join(
-                    settings.MEDIA_ROOT, 'room',
-                    str(attach.message.room.id), "attachments", f"FILE_{file_id}.{file['ext']}"
-                )
-                basename = os.path.basename(dest)
-                os.makedirs(dest.rstrip(basename), exist_ok=True)
-                os.rename(file_name, dest)
+
+            if os.path.isfile(file_name):
+                os.remove(file_name)
+
             attach.save()
             message.attachments.add(attach)
         message.save()
