@@ -5,6 +5,8 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.utils.translation import gettext_lazy as _
+from rest_framework import status
+from rest_framework.response import Response
 
 from .models import FriendRequest
 from .serializers import RequestSerializer
@@ -34,7 +36,7 @@ def request_list(request):
         'sent': sent,
         'unread': Notification.objects.filter(user=request.user, viewed=0)
     }
-    return render(request, 'friend_requests/list.html', context=context)
+    return Response(data=context, status=status.HTTP_200_OK)
 
 
 @login_required
@@ -48,10 +50,11 @@ def friend_request_view(request, req_id: int):
     if req.user_to == request.user:
         logger.info("Providing friend request for user %s" % request.user)
         context = {
+            'message': "Providing friend_request for user %s" % request.user.pk,
             'user': UserSerialize(request.user).data,
             'req': RequestSerializer(req).data,
         }
-        return render(request, 'friend_requests/view.html', context=context)
+        return Response(data=context, status=status.HTTP_200_OK)
     else:
         logger.warning(
             "User %s not authorized to view notification with id %s belonging to user %s",
@@ -60,7 +63,10 @@ def friend_request_view(request, req_id: int):
             req.user_to
         )
         messages.error(request, _('You are not authorized to view that friend_request.'))
-        return redirect('friend_requests:list')
+        return Response(
+            {'message': 'You are not authorized to view that friend_request'},
+            status=status.HTTP_403_FORBIDDEN
+        )
 
 
 @login_required
@@ -70,7 +76,7 @@ def request_set_as_accepted(request, request_pk):
     friend_request.set_status('accepted')
     messages.success(request, _('Request accepted'))
     friend_request.user_to.Friends.add(friend_request.user_from)
-    return redirect("friend_requests:list")
+    return Response({"message": 'Marked friend request as accepted'}, status=status.HTTP_200_OK)
 
 
 @login_required
@@ -79,7 +85,7 @@ def request_set_as_declined(request, request_pk):
     friend_request = get_object_or_404(FriendRequest, pk=request_pk)
     friend_request.set_status('declined')
     messages.success(request, _('Request declined'))
-    return redirect("friend_requests:list")
+    return Response({"message": 'Marked friend request as declined'}, status=status.HTTP_200_OK)
 
 
 @login_required
@@ -95,7 +101,7 @@ def send_request(request, to_user_pk):
         messages.warning(request, _(e.args[0]))
         return redirect('users')
     messages.success(request, _("Friend request sent"))
-    return redirect('users')
+    return Response({"message": "Friend request successfully sent"}, status=status.HTTP_200_OK)
 
 
 def user_requests_count(request, user_pk):
@@ -109,11 +115,17 @@ def remove_request(request, request_pk):
     logger.info("Remove friend_request %s was called by user %s", request_pk, request.user)
     friend_req = get_object_or_404(FriendRequest, pk=request_pk)
     if friend_req.user_from == request.user:
-        if FriendRequest.objects.filter(pk=request_pk).exists():
-            friend_req.delete()
-            logger.info('Friend request %s was deleted by user %s', request_pk, request.user)
-            messages.success(request, _('Friend request deleted'))
+        friend_req.delete()
+        logger.info('Friend request %s was deleted by user %s', request_pk, request.user)
+        messages.success(request, _('Friend request deleted'))
+        return Response(
+            {'message': "Friend request successfully deleted"},
+            status=status.HTTP_200_OK
+        )
     else:
         logger.error("Unable to delete friend request %s for user %s - matching is not found",
                      request_pk, friend_req.user_from)
-    return redirect('friend_requests:list')
+    return Response(
+        {'message': "Unable to delete Friend request for user %s" % friend_req.user_to},
+        status=status.HTTP_403_FORBIDDEN
+    )
