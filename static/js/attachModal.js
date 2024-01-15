@@ -168,7 +168,7 @@ export function base64ToFile(base64Data, fileName, fileType) {
     return file;
 }
 export async function displayImage(base64="", asFile, file="", filename="", fileType="") {
-    if (file.length > 0 && base64.length == 0) {
+    if (file && base64.length == 0) {
         base64 = await readAsDataURL(file);
     } else if (file.length == 0 && base64.length > 0) {
         file = base64ToFile(base64, filename, fileType);
