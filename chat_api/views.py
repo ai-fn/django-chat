@@ -27,13 +27,6 @@ from friend_requests.models import FriendRequest
 logger = logging.getLogger(__name__)
 
 
-def index(request):
-    """Index endpoint"""
-    if request.user.is_anonymous:
-        return Response({'message': 'You are not authorized yet'}, status=status.HTTP_401_UNAUTHORIZED)
-    return Response({'message': 'Redirect to chats'}, status=status.HTTP_200_OK)
-
-
 class LoginView(APIView):
     """
     Login endpoint

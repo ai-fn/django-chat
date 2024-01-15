@@ -2,7 +2,7 @@ from django.urls import path, include
 from .views import *
 
 urlpatterns = [
-    path('', index),
+    path('', ChatsView.as_view(), name="index"),
     path('verify-email/<uid64>/<token>/', EmailVerifyView.as_view(), name='verify-email'),
     path('api-auth/', include('rest_framework.urls')),
     path('login/', LoginView.as_view(), name='login'),
