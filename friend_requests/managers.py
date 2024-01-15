@@ -121,7 +121,8 @@ class FriendRequestManager(models.Manager):
             try:
                 user = CustomUser.objects.get(pk=user_pk)
             except CustomUser.DoesNotExist:
-                return -1
+                logger.warning("User with pk %s not found" % user_pk)
+                sent_req = []
             else:
                 logger.debug("Updating sent requests for user with pk %s " % user_pk)
                 sent_req = set(self.filter(

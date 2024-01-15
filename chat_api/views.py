@@ -17,8 +17,9 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from friend_requests.serializers import RequestSerializer
+from notifications.serializers import NotifSerializer
 from .serializers import *
-from .forms import *
 
 from notifications.models import Notification
 from friend_requests.models import FriendRequest
@@ -40,8 +41,8 @@ class LoginView(APIView):
 
     @staticmethod
     def post(request):
-        email = request.POST.get('email')
-        password = request.POST.get('password')
+        email = request.data.get('email')
+        password = request.data.get('password')
         user = authenticate(request, email=email, password=password)
         if user is not None:
             if user.is_email_confirmed:
@@ -66,8 +67,8 @@ class RegisterView(APIView):
 
     @staticmethod
     def post(request):
-        email = request.POST.get('email')
-        password = request.POST.get('password')
+        email = request.data.get('email')
+        password = request.data.get('password')
         if CustomUser.objects.filter(email=email).exists():
             logger.info("Try to register exist user with email %s" % email)
             return Response({'message': 'User with provided email already exists'}, status=status.HTTP_400_BAD_REQUEST)
@@ -91,8 +92,8 @@ class LogoutView(APIView):
 
     @staticmethod
     def post(request):
-        email = request.POST.get('email')
-        password = request.POST.get('password')
+        email = request.data.get('email')
+        password = request.data.get('password')
         user = authenticate(email=email, password=password)
         if user is not None:
             logout(request)
@@ -141,7 +142,6 @@ class ChatsView(APIView):
     def get(request):
         logger.info("Chats view called by user %s" % request.user)
         user = request.user
-        create_room_form = CreateRoomForm()
 
         rooms = RoomSerialize(Room.objects.filter(members=user), many=True, context={'request': request})
         folders = FolderSerialize(
@@ -154,9 +154,8 @@ class ChatsView(APIView):
             'rooms': rooms.data,
             'folders': folders,
             'user': UserSerialize(request.user).data,
-            'unread': Notification.objects.filter(user=user, viewed=False),
+            'unread': NotifSerializer(Notification.objects.filter(user=user, viewed=False), many=True).data,
             'friends': UserSerialize(user.Friends, many=True).data,
-            'create_room_form': create_room_form,
         }
         return Response(data=context, status=status.HTTP_200_OK)
 
@@ -178,7 +177,7 @@ class ChatView(APIView):
             'room': RoomSerialize(room, context={'request': request}).data,
             'user': UserSerialize(request.user).data,
             'members': users,
-            'unread': Notification.objects.filter(user=user, viewed=0)
+            'unread': NotifSerializer(Notification.objects.filter(user=user, viewed=0), many=True).data
         }
         return Response(data=context, status=status.HTTP_200_OK)
 
@@ -217,7 +216,7 @@ class DirectView(APIView):
             'user': UserSerialize(request.user).data,
             'user_to': UserSerialize(user).data,
             'members': users,
-            'unread': Notification.objects.filter(user=request.user, viewed=False)
+            'unread': NotifSerializer(Notification.objects.filter(user=request.user, viewed=False), many=True).data,
         }
         logger.info("Direct room with pk %s opened  by %s", room.id, request.user)
         return Response(data=context, status=status.HTTP_200_OK)
@@ -231,9 +230,9 @@ class CreateRoom(APIView):
     @staticmethod
     def post(request):
         user = request.user
-        room_name = request.POST.get('room_name')
+        room_name = request.data.get('room_name')
         new_room = Room.objects.create(name=room_name, type=Room.Type.CHAT)
-        img = request.POST.get('room_img')
+        img = request.data.get('room_img')
         if img:
             new_room.image = img
             new_room.save()
@@ -252,7 +251,7 @@ class RemoveFriend(APIView):
 
     @staticmethod
     def post(request):
-        user_id = request.POST.get('user_id')
+        user_id = request.data.get('user_id')
         user = request.user
         user.Friends.remove(user_id)
         user.save()
@@ -276,10 +275,14 @@ class Users(APIView):
             'user': UserSerialize(request.user).data,
             'users': UserSerialize(CustomUser.objects.filter(~Q(pk=request.user.pk)), many=True).data,
             'friends': UserSerialize(request.user.Friends.all(), many=True).data,
-            'requests': FriendRequest.objects.filter(user_from=request.user),
-            'unread': Notification.objects.filter(user=request.user, viewed=0),
-            'request_sent_for': FriendRequest.objects.requests_sent_for(request.user.pk),
-            'search_form': SearchForm(),
+            'unread': NotifSerializer(
+                Notification.objects.filter(user=request.user, viewed=0),
+                many=True
+            ).data,
+            'request_sent_for': RequestSerializer(
+                FriendRequest.objects.requests_sent_for(request.user.pk),
+                many=True
+            ).data,
         }
         return Response(data=context, status=status.HTTP_200_OK)
 
@@ -298,7 +301,7 @@ class ProfileView(APIView):
             'user': UserSerialize(request.user).data,
             'user_profile': UserSerialize(user_profile).data,
             'friends': UserSerialize(user_profile.Friends.all(), many=True).data,
-            'unread': Notification.objects.filter(user=request.user, viewed=0),
+            'unread': NotifSerializer(Notification.objects.filter(user=request.user, viewed=0), many=True).data,
         }
         return Response(data=context, status=status.HTTP_200_OK)
 
@@ -306,9 +309,9 @@ class ProfileView(APIView):
     def post(request, user_id):
         user = request.user
         avatar = request.FILES.get("avatar")
-        user.First_Name = request.POST.get("first_name")
-        user.Second_Name = request.POST.get("second_name")
-        user.username = request.POST.get("username")
+        user.First_Name = request.data.get("first_name")
+        user.Second_Name = request.data.get("second_name")
+        user.username = request.data.get("username")
         if avatar is not None and user.Avatar != avatar:
             user.Avatar = avatar
         user.save()
@@ -487,17 +490,16 @@ class SearchUsers(APIView):
 
     @staticmethod
     def post(request):
-        body = request.POST.get('body').lower()
+        body = request.data.get('body').lower()
         users = CustomUser.objects.filter(
             Q(username__icontains=body) | Q(First_Name__icontains=body) | Q(Second_Name__icontains=body)
         )
         context = {
             'user': UserSerialize(request.user).data,
-            'search_form': SearchForm(),
             'users': UserSerialize(users, many=True, ).data,
             'friends': UserSerialize(request.user.Friends.all(), many=True).data,
             'requests': FriendRequest.objects.filter(user_from=request.user),
-            'unread': Notification.objects.filter(user=request.user, viewed=0),
+            'unread': NotifSerializer(Notification.objects.filter(user=request.user, viewed=0), many=True).data,
             'request_sent_for': FriendRequest.objects.requests_sent_for(request.user.pk)
         }
         return Response(data=context, status=status.HTTP_200_OK)
