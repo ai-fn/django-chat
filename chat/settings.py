@@ -59,6 +59,7 @@ CORS_ALLOW_CREDENTIALS = True
 
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:8000',
+    'http://localhost:3000',
 ]
 
 CORS_ALLOWED_ORIGIN_REGEXES = [
@@ -68,6 +69,7 @@ CORS_ALLOWED_ORIGIN_REGEXES = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'social_django.middleware.SocialAuthExceptionMiddleware',
