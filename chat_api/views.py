@@ -62,6 +62,13 @@ class RegisterView(APIView):
     def post(request):
         email = request.data.get('email')
         password = request.data.get('password')
+
+        try:
+            validate_email(email)
+            validate_password(password)
+        except ValidationError as e:
+            return Response({'error': e}, status=status.HTTP_400_BAD_REQUEST)
+        
         if CustomUser.objects.filter(email=email).exists():
             logger.info("Try to register exist user with email %s" % email)
             return Response({'message': 'User with provided email already exists'}, status=status.HTTP_400_BAD_REQUEST)
