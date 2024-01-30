@@ -4,6 +4,9 @@ from django.contrib import messages
 from django.contrib.auth import login, logout, authenticate
 from django.db.models import Q, Count
 
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
+from django.core.validators import validate_email
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import send_mail
 from django.shortcuts import render, redirect, get_object_or_404
