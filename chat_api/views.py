@@ -1,12 +1,10 @@
-import json
-
 from django.contrib import messages
 from django.contrib.auth import login, logout, authenticate
-from django.db.models import Q, Count
+from django.db.models import Count
 
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import send_mail
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import get_object_or_404
 from django.template import loader
 from django.utils.translation import gettext_lazy as _
 from django.utils.encoding import force_bytes
