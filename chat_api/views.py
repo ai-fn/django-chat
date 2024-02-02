@@ -2,6 +2,9 @@ from django.contrib import messages
 from django.contrib.auth import login, logout, authenticate
 from django.db.models import Count
 
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
+from django.core.validators import validate_email
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
@@ -60,6 +63,13 @@ class RegisterView(APIView):
     def post(request):
         email = request.data.get('email')
         password = request.data.get('password')
+
+        try:
+            validate_email(email)
+            validate_password(password)
+        except ValidationError as e:
+            return Response({'error': e}, status=status.HTTP_400_BAD_REQUEST)
+        
         if CustomUser.objects.filter(email=email).exists():
             logger.info("Try to register exist user with email %s" % email)
             return Response({'message': 'User with provided email already exists'}, status=status.HTTP_400_BAD_REQUEST)
