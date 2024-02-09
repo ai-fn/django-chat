@@ -222,17 +222,21 @@ class ChatConsumer(WebsocketConsumer):
     def add_member(self, text_data_json) -> None:
         members = list(map(lambda x: x.strip("\n").strip(), text_data_json['members']))
         new_users = CustomUser.objects.filter(username__in=members)
+        users_added = False
         for user in new_users:
-            if self.room.members.exclude(username=user.username):
+            if not self.room.members.filter(username=user.username).exists():
                 self.room.members.add(user)
-        self.room.save()
-        async_to_sync(self.channel_layer.group_send)(
-            self.room_group_name,
-            {
-                'type': 'send_chat_notify',
-                'message': f'{", ".join(members)} joined to our chat!'
-            }
-        )
+                users_added = True
+
+        if users_added:
+            self.room.save()
+            async_to_sync(self.channel_layer.group_send)(
+                self.room_group_name,
+                {
+                    'type': 'send_chat_notify',
+                    'message': f'{", ".join(members)} joined to our chat!'
+                }
+            )
 
     def send_chat_notify(self, event):
         message = event.get('message')
