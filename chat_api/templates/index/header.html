@@ -19,36 +19,38 @@
             <div class="chat-info-wrapper">
                 <div class="ChatInfo">
                     {% if room %}
-                        {% if room.name == "Favorites" %}
-                            <div class="Avatar size-medium peer-color-2 saved-messages interactive">
-                                <div class="inner">
-                                    <i class="Avatar__icon icon fa-solid fa-bookmark" role="img" aria-label="{{ user.username }}"></i>
-                                </div>
-                            </div>
-                            <div class="info">
-                                <div class="title ysHMmXALnn0fgFRc7Bn7">
-                                    <h3>Saved Messages</h3>
-                                </div>
-                            </div>                        
-                        {% else %}
-                            
-                            {% if room.image %}
-                                <div class="Avatar size-medium interactive">
+                        <a id="show-chat-info-btn" data-bs-toggle="modal" data-bs-target="#chatInfo" style="display: flex;" title="Chat info">
+                            {% if room.name == "Favorites" %}
+                                <div class="Avatar size-medium peer-color-2 saved-messages interactive">
                                     <div class="inner">
-                                        <img src="{{ room.image }}" class="Avatar__media avatar-media opacity-transition slow open shown" alt="{{ room.name }}" decoding="async" draggable="false">
+                                        <i class="Avatar__icon icon fa-solid fa-bookmark" role="img" aria-label="{{ user.username }}"></i>
                                     </div>
-                            {% else %}
-                                <div class="Avatar size-medium peer-color-2 interactive">
-                                    <div class="inner">{% first_letter room.name %}</div>
-                            {% endif %}
-                               
-                            </div>
-                            <div class="info">
-                                <div class="title ysHMmXALnn0fgFRc7Bn7">
-                                    <h3>{{ room.name }}</h3>
                                 </div>
-                            </div>
-                        {% endif %}
+                                <div class="info">
+                                    <div class="title ysHMmXALnn0fgFRc7Bn7">
+                                        <h3>Saved Messages</h3>
+                                    </div>
+                                </div>
+                            {% else %}
+                                
+                                {% if room.image %}
+                                    <div class="Avatar size-medium interactive">
+                                        <div class="inner">
+                                            <img src="{{ room.image }}" class="Avatar__media avatar-media opacity-transition slow open shown" alt="{{ room.name }}" decoding="async" draggable="false">
+                                        </div>
+                                {% else %}
+                                    <div class="Avatar size-medium peer-color-2 interactive">
+                                        <div class="inner">{% first_letter room.name %}</div>
+                                {% endif %}
+                                
+                                </div>
+                                <div class="info">
+                                    <div class="title ysHMmXALnn0fgFRc7Bn7">
+                                        <h3>{{ room.name }}</h3>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </a>
                     {% else %}
                         <div class="logo-container">
                             <div class="inner">

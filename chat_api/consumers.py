@@ -97,7 +97,7 @@ class ChatConsumer(WebsocketConsumer):
             logger.info("Requested for edit message with pk %s not found" % msg_id)
             self.send(json.dumps({
                 'action': 'notif',
-                'message': 'Message not fount'
+                'message': 'Message not found'
             }))
             return
         message.body = msg_body
@@ -220,16 +220,27 @@ class ChatConsumer(WebsocketConsumer):
             }))
 
     def add_member(self, text_data_json) -> None:
-        members = text_data_json['members']
+        members = list(map(lambda x: x.strip("\n").strip(), text_data_json['members']))
         new_users = CustomUser.objects.filter(username__in=members)
         for user in new_users:
             if self.room.members.exclude(username=user.username):
                 self.room.members.add(user)
         self.room.save()
-        self.send(json.dumps({
-            "action": "chat-notify",
-            "message": f' {", ".join(members)} joined to our chat!'
-        }))
+        async_to_sync(self.channel_layer.group_send)(
+            self.room_group_name,
+            {
+                'type': 'send_chat_notify',
+                'message': f'{", ".join(members)} joined to our chat!'
+            }
+        )
+
+    def send_chat_notify(self, event):
+        message = event.get('message')
+        if message:
+            self.send(json.dumps({
+                'action': 'chat-notify',
+                'message': message
+            }))
 
     def receive_txt_message(self, text_data_json) -> None:
         body = text_data_json['message']

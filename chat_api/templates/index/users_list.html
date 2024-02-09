@@ -2,7 +2,10 @@
 
 {% if users %}
 {% for usr in users %}
-<div class="ListItem">
+<div class="ListItem" style="display: flex; align-items: center;">
+    <div class="own-form-check">
+        <input class="own-form-check-input" type="checkbox" id="addMemberChecker">
+    </div>
     <div class="ListItem-button">
         <a href="{% url 'profile' usr.user_id %}">
             <div class="status status-clickable">
