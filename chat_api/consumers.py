@@ -59,12 +59,6 @@ class ChatConsumer(WebsocketConsumer):
         )
         self.accept()
 
-    def _send_error(self, err: str):
-        self.send(json.dumps({
-            'acton': 'error',
-            'error': err
-        }))
-
     def disconnect(self, close_code) -> None:
         async_to_sync(self.channel_layer.group_discard)(
             self.room_group_name,
@@ -74,10 +68,6 @@ class ChatConsumer(WebsocketConsumer):
             users_in_groups[self.room_group_name].discard(self.scope['user'])
 
     def receive(self, text_data=None, bytes_data=None) -> None:
-        if not self.scope['user'].is_authenticated:
-            self._send_error("Only for authenticated users")
-            return
-
         text_data_json = json.loads(text_data)
         action = text_data_json['action']
         try:
@@ -96,7 +86,7 @@ class ChatConsumer(WebsocketConsumer):
             logger.info("Requested for edit message with pk %s not found" % msg_id)
             self.send(json.dumps({
                 'action': 'notif',
-                'message': 'Message not fount'
+                'message': 'Message not found'
             }))
             return
         message.body = msg_body

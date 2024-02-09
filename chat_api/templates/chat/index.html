@@ -5,7 +5,7 @@
 
     <!-- Modal for add members -->
     <div class="modal fade" id="addMemberModal" tabindex="-1" data-bs-theme="dark" aria-labelledby="addMemberModalLabel" aria-hidden="true">
-        <div class="modal-dialog text-bg-dark">
+        <div class="modal-dialog">
             <div class="modal-content">
             <div class="modal-header">
                 <h1 class="modal-title fs-5" id="addMemberModalLabel">Add members</h1>
@@ -13,12 +13,12 @@
             </div>
             <div class="modal-body">
                 <ul class="list-group">
-                    {% include 'index/users_list.html' with users=members %}
+                    {% include 'index/users_list.html' with users=members addMembers=True%}
                 </ul>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-success" data-bs-dismiss="modal" id="addMembersBtn" onclick="addMembers()">Add members</button>
+                <button type="button" class="btn btn-success" data-bs-dismiss="modal" id="addMembersBtn">Add members</button>
             </div>
             </div>
         </div>
@@ -30,14 +30,14 @@
     <div class="modal fade" id="chatInfo" data-bs-theme="dark" tabindex="-1" aria-labelledby="chatInfoModalLabel" aria-hidden="true">
         <div class="modal-dialog">
           <div class="modal-content">
-            <div class="modal-header text-bg-dark">
+            <div class="modal-header">
                 Info
               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-header">
                 <div class="d-flex">
                     <div class="avatar small" style="background-image: url({{ room.image}});"></div>
-                    <div class="room-name text-bg-dark">
+                    <div class="room-name">
                       <span>{{ room.name }}</span>
                           {% if room.type == 'chat' and room.name != 'Favorites' %}
                               <div>{{ room.members|length }} members</div>

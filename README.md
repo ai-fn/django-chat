@@ -1,5 +1,5 @@
 # django-chat
-Sample WebSocker chat app
+Sample WebSocket chat app
 
 ## Main Features:
 - Chat with other users using text or audio messages。

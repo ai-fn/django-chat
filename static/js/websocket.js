@@ -1,8 +1,8 @@
 import { drawAudio } from "./audioVisualize.js";
-import { getPreviewMessage, setClipStyle, updateClipPath, urlify } from "./utils.js";
+import { formatSizeUnits } from "./attachModal.js";
 import { scrollToSelectedMessage, showNotify } from "./contextmenu.js";
 import { editableMessageText, resetMsgArea, msgWrapper } from "./editMessage.js";
-import { formatSizeUnits } from "./attachModal.js";
+import { getPreviewMessage, setClipStyle, updateClipPath, urlify } from "./utils.js";
 
 let ws;
 let room;
@@ -54,6 +54,8 @@ function autoReconnect(ws_create) {
 			}
 		}, 3000);
 	}
+	window.addEventListener("online", startReconnecting);
+	window.addEventListener("offline", startReconnecting);
 	rc.onopen = () => {
 		wsOnopen();
 		rc.onmessage = wsOnmessage;
@@ -411,7 +413,7 @@ function addMembers() {
 	const checkBoxes = document.querySelectorAll('input[type="checkbox"]:checked')
 
 	checkBoxes.forEach(el => {
-		members.push(el.nextElementSibling.textContent)
+		members.push(el.parentElement.parentElement.querySelector('.info-row').textContent)
 	})
 
 	checkBoxes.forEach(el => { el.checked = false })
@@ -593,7 +595,7 @@ function send() {
 		return
 	}
 
-    const msg = editableMessageText.innerText.trim();
+	let msg = editableMessageText.innerText.trim();
 
 	if (msg.length == 0)
 		return
